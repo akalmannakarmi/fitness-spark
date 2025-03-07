@@ -13,6 +13,7 @@ async def create_user(user: UserCreate) -> str:
         "username":user.username,
         "email":user.email,
         "password":hash_password(user.password),
+        "groups":["user"]
     })
     return str(result.inserted_id)
 

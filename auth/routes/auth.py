@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from ..schemas import UserCreate, LoginRequest, Token, UserOut
 from ..crud import create_user, authenticate_user
 from ..utils import create_access_token
-from ..wraper import authenticated_user
+from ..wraper import auth_user
 from ..models import User
+from stats.wraper import update_stats,Models,Actions
 
 router = APIRouter()
 
@@ -25,6 +26,5 @@ async def login(request: LoginRequest):
     return {"access_token": access_token, "token_type": "bearer", "expires_at":expires_at}
 
 @router.get("/users/me", response_model=UserOut)
-async def read_users_me(request:Request):
-    user: User= await authenticated_user(request)
+async def read_users_me(user:User=Depends(auth_user)):
     return {"username":user.username,"email":user.email}
