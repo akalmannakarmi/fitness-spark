@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from enum import Enum
 
 load_dotenv()
 
@@ -20,5 +21,20 @@ else:
     BASE_URL = f"{SCHEMA}://{HOST}:{PORT}" 
 
 AUTH_PREFIX = "/auth"
+STATS_PREFIX = "/stats"
 ADMIN_PREFIX = "/admin"
 APIV1_PREFIX = "/api/v1"
+
+
+class Models(str, Enum):
+    User = "user"
+    Stats = "stats"
+    V1_Recipe = "v1_recipe"
+    V1_Plan = "v1_plan"
+
+
+class Actions(str, Enum):
+    Create = "create"
+    Read = "read"
+    Update = "update"
+    Delete = "delete"

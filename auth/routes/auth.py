@@ -9,6 +9,7 @@ from stats.wraper import update_stats,Models,Actions
 router = APIRouter()
 
 @router.post("/signup", response_model=Token)
+@update_stats(Models.User,Actions.Create)
 async def signup(user: UserCreate):
     try:
         user_id = await create_user(user)
@@ -18,6 +19,7 @@ async def signup(user: UserCreate):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 @router.post("/login", response_model=Token)
+@update_stats(Models.User,Actions.Read)
 async def login(request: LoginRequest):
     user = await authenticate_user(request.username, request.password)
     if not user:
@@ -26,5 +28,6 @@ async def login(request: LoginRequest):
     return {"access_token": access_token, "token_type": "bearer", "expires_at":expires_at}
 
 @router.get("/users/me", response_model=UserOut)
+@update_stats(Models.User,Actions.Read)
 async def read_users_me(user:User=Depends(auth_user)):
     return {"username":user.username,"email":user.email}

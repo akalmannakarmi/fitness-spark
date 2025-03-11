@@ -37,17 +37,3 @@ def verify_token(token: str) -> str:
 
     return ObjectId(payload["user_id"])
 
-
-async def get_token(request:Request) -> str:
-    if "token" in request.query_params:
-        return request.query_params.get("token")
-    form_data = await request.form()
-    if "token" in form_data:
-        return form_data.get("token")
-    
-    authorization: str = request.headers.get("Authorization")
-    
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid or missing token")
-    
-    return authorization.removeprefix("Bearer ").strip()

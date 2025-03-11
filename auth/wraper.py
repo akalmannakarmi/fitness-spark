@@ -1,15 +1,11 @@
 from fastapi import Request, HTTPException
-from .utils import verify_token
+from .utils import verify_token,get_token
 from .crud import get_user
 from .models import User
 
 async def auth_user(request:Request,token:str=None):
-    authorization: str = request.headers.get("Authorization")
-    
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid or missing token")
-    
-    token = authorization.removeprefix("Bearer ").strip()
+    if token is None:
+        token = get_token(request)
 
     try:
         user_id = verify_token(token)
