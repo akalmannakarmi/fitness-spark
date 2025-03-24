@@ -4,8 +4,11 @@ from stats.routes import router as statsRouter
 from admin.routes import router as adminRouter
 from appV1.routes import router as appV1Router
 from config import AUTH_PREFIX,STATS_PREFIX,ADMIN_PREFIX,APIV1_PREFIX
+from utils.exception import register_exception_handlers
 
 app = FastAPI()
+
+register_exception_handlers(app)
 
 @app.get("/",tags=["Root"])
 async def root():
