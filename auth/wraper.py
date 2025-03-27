@@ -19,5 +19,5 @@ async def admin_user(request:Request,token:str=None):
     user:User = await auth_user(request,token)
     if "admin" in user.groups:
         return user
-    raise HTTPException(status_code=401, detail=f"Admin only!")
+    raise HTTPException(status_code=403, detail=f"Admin only!")
     

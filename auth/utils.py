@@ -4,7 +4,7 @@ from passlib.context import CryptContext
 from fastapi import HTTPException,Request
 from config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 from bson import ObjectId
-from typing import Tuple
+from typing import Tuple,Optional
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -14,7 +14,7 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-def create_access_token(user_id,expires_at:float=None) -> Tuple[str,float]:
+def create_access_token(user_id,expires_at:float=0) -> Tuple[str,float]:
     if not expires_at:
         expires_at = (datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)).timestamp()
 
@@ -35,17 +35,14 @@ def verify_token(token: str) -> str:
     if payload["expires_at"] < datetime.now(timezone.utc).timestamp():
         raise HTTPException(status_code=401, detail="Token has expired!")
 
-    return ObjectId(payload["user_id"])
+    return payload["user_id"]
 
 
-async def get_token(request:Request) -> str:
+def get_token(request:Request) -> Optional[str]:
     if "token" in request.query_params:
         return request.query_params.get("token")
-    form_data = await request.form()
-    if "token" in form_data:
-        return form_data.get("token")
     
-    authorization: str = request.headers.get("Authorization")
+    authorization = request.headers.get("Authorization")
     
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid or missing token")

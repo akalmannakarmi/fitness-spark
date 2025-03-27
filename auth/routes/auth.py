@@ -11,12 +11,9 @@ router = APIRouter()
 @router.post("/signup", response_model=Token)
 @update_stats(Models.User,Actions.Create)
 async def signup(user: UserCreate):
-    try:
-        user_id = await create_user(user)
-        access_token,expires_at = create_access_token(user_id,user.expires_at)
-        return {"access_token": access_token, "token_type": "bearer", "expires_at":expires_at}
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    user_id = await create_user(user)
+    access_token,expires_at = create_access_token(user_id,user.expires_at)
+    return {"access_token": access_token, "token_type": "bearer", "expires_at":expires_at}
 
 @router.post("/login", response_model=Token)
 @update_stats(Models.User,Actions.Read)
@@ -30,4 +27,4 @@ async def login(request: LoginRequest):
 @router.get("/users/me", response_model=UserOut)
 @update_stats(Models.User,Actions.Read)
 async def read_users_me(user:User=Depends(auth_user)):
-    return {"username":user.username,"email":user.email}
+    return {"_id":user._id,"username":user.username,"email":user.email}

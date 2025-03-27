@@ -40,6 +40,16 @@ async def test_Simple_Get_User():
         assert "email" in data
         assert email == data["email"]
 
+        response = await client.get("/users/me",params={"token":access_token})
+        
+        assert response.status_code == 200
+        data = response.json()
+
+        assert "username" in data
+        assert username == data["username"]
+        assert "email" in data
+        assert email == data["email"]
+
 
 @pytest.mark.asyncio
 async def test_Expired_Token():
@@ -118,5 +128,5 @@ async def test_Stress_Test():
         await asyncio.gather(*tasks)
 
         end_time = time.time()
-        print(f"Stress test completed in {end_time - start_time:.2f} seconds.")
+        print(f"[Completed in {end_time - start_time:.2f} secs.]",end=" ")
 
