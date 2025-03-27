@@ -61,8 +61,8 @@ async def update_user(id:str,form:UserUpdate) -> str:
     if form.groups:
         update["groups"] = form.groups
     
-    result = await users_collection.update_one({"_id":ObjectId(id)},update)
-    return result.upserted_id
+    result = await users_collection.update_one({"_id":ObjectId(id)},{"$set": update})
+    return str(id) if result.modified_count > 0 else None
 
 async def delete_user(id:str) -> None:
     await users_collection.delete_one({"_id":ObjectId(id)})
