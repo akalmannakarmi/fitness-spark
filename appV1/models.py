@@ -4,13 +4,11 @@ from datetime import date
 from datetime import time
 
 class Nutrient:
-    _id: ObjectId
     name: str
     amount: float
     unit: str
 
 class Ingredient:
-    _id: ObjectId
     name: str
     amount: float
     unit: str
