@@ -13,7 +13,7 @@ class Ingredient:
     amount: float
     unit: str
 
-class Recipe():
+class Recipe:
     _id: ObjectId
     image: str
     title: str
@@ -29,16 +29,17 @@ class Recipe():
     steps: List[str]
 
 
-class DailyPlan():
+class DailyPlan:
     day: date
     recipes: Dict[time,Recipe]
     summary: str
 
 
-class MealPlan():
+class MealPlan:
     _id: ObjectId
     user: ObjectId
     title: str
     description: str
-    dailyPlans: DailyPlan
+    dailyPlans: List[DailyPlan]
     summary: str
+    private: bool

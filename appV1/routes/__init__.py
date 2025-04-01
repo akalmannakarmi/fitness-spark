@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .recipie import router as recipeRouter
+from .recipe import router as recipeRouter
 from .meal_plans import router as mealPlanRouter
 from .admin import router as adminRouter
 

@@ -1,47 +1,73 @@
-from .schemas import RecipeCreate,RecipeUpdate
+from .schemas import RecipeCreate,RecipeUpdate,MealPlanCreate,MealPlanUpdate
 from .database import recipes_collection,meal_plans_collection
-from .models import Recipe,MealPlan
 from bson import ObjectId
 from utils.exception import CustomAPIException
 
 
-async def create_recipe(recipe: RecipeCreate) -> str:
-    result = await recipes_collection.insert_one({})
+async def db_create_recipe(recipe: RecipeCreate) -> str:
+    result = await recipes_collection.insert_one(recipe.model_dump())
     return str(result.inserted_id)
 
-async def update_recipe(recipe: RecipeUpdate) -> str:
-    result = await recipes_collection.insert_one({})
+async def db_update_recipe(id:str,recipe: RecipeUpdate) -> str:
+    update_data = {k: v for k, v in recipe.model_dump().items() if v is not None}
+
+    if not update_data:
+        raise CustomAPIException(status_code=400, error="No Field", message="No valid fields to update")
+
+    result = await recipes_collection.update_one({"_id": ObjectId(id)}, {"$set": update_data})
+
+    if result.matched_count == 0:
+        raise CustomAPIException(status_code=404, error="Not Found", message="Recipe not found")
+    return id
+
+async def db_delete_recipe(id: str) -> str:
+    result = await recipes_collection.delete_one({"_id":ObjectId(id)})
+
+    if result.deleted_count == 0:
+        raise CustomAPIException(status_code=404, error="Not Found", message="Recipe not found")
+    return id
+
+async def db_get_recipes() -> str:
+    result = recipes_collection.find({})
+    return await result.to_list()
+
+async def db_get_recipe(id:str) -> str:
+    result = await recipes_collection.find_one({"_id":ObjectId(id)})
+    if not result:
+        raise CustomAPIException(status_code=404, error="Not Found", message="Recipe not found")
+    return result
+
+
+
+async def db_create_meal_plan(meal_plan: MealPlanCreate) -> str:
+    result = await meal_plans_collection.insert_one(meal_plan.model_dump())
     return str(result.inserted_id)
 
-async def delete_recipe(id: str) -> str:
-    result = await recipes_collection.insert_one({})
-    return str(result.inserted_id)
+async def db_update_meal_plan(id:str,meal_plan: MealPlanUpdate) -> str:
+    update_data = {k: v for k, v in meal_plan.model_dump().items() if v is not None}
 
-async def get_recipes() -> str:
-    result = await recipes_collection.insert_one({})
-    return str(result.inserted_id)
+    if not update_data:
+        raise CustomAPIException(status_code=400, error="No Field", message="No valid fields to update")
 
-async def get_recipe(id:str) -> str:
-    result = await recipes_collection.insert_one({})
-    return str(result.inserted_id)
+    result = await meal_plans_collection.update_one({"_id": ObjectId(id)}, {"$set": update_data})
 
+    if result.matched_count == 0:
+        raise CustomAPIException(status_code=404, error="Not Found", message="Meal Plan not found")
+    return id
 
-async def create_meal_plan(recipe: RecipeCreate) -> str:
-    result = await recipes_collection.insert_one({})
-    return str(result.inserted_id)
+async def db_delete_meal_plan(id: str) -> str:
+    result = await meal_plans_collection.delete_one({"_id":ObjectId(id)})
 
-async def update_meal_plan(recipe: RecipeUpdate) -> str:
-    result = await recipes_collection.insert_one({})
-    return str(result.inserted_id)
+    if result.deleted_count == 0:
+        raise CustomAPIException(status_code=404, error="Not Found", message="Meal Plan not found")
+    return id
 
-async def delete_meal_plan(id: str) -> str:
-    result = await recipes_collection.insert_one({})
-    return str(result.inserted_id)
+async def db_get_meal_plans() -> str:
+    result = meal_plans_collection.find({})
+    return await result.to_list()
 
-async def get_meal_plans() -> str:
-    result = await recipes_collection.insert_one({})
-    return str(result.inserted_id)
-
-async def get_meal_plan(id:str) -> str:
-    result = await recipes_collection.insert_one({})
-    return str(result.inserted_id)
+async def db_get_meal_plan(id:str) -> str:
+    result = await meal_plans_collection.find_one({"_id":ObjectId(id)})
+    if not result:
+        raise CustomAPIException(status_code=404, error="Not Found", message="Meal Plan not found")
+    return result
