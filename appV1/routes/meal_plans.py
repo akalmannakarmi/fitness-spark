@@ -1,31 +1,35 @@
-from fastapi import APIRouter
+from fastapi import APIRouter,Depends
+from ..crud import db_get_public_meal_plans,db_get_user_meal_plans,db_get_user_meal_plan,db_create_meal_plan,db_update_user_meal_plan,db_delete_user_meal_plan
+from ..schemas import SuccessResponse,MealPlansOut,MealPlanOut,MealPlanCreate,MealPlanUpdate
+from auth.wraper import User,auth_user
 
 router = APIRouter()
 
-@router.post("/get/meal_plans")
-async def get_meal_plans():
-    pass
+@router.get("/get/meal_plans",response_model=MealPlansOut)
+async def get_meal_plans(_:User=Depends(auth_user)):
+    meal_plans = await db_get_public_meal_plans()
+    return {"meal_plans":meal_plans}
 
-@router.post("/get/meal_plan/{id}")
-async def get_meal_plan(id:str):
-    pass
+@router.get("/get/my/meal_plans",response_model=MealPlansOut)
+async def get_user_meal_plans(user:User=Depends(auth_user)):
+    meal_plans = await db_get_user_meal_plans(user._id)
+    return {"meal_plans":meal_plans}
 
-@router.post("/create/meal_plan")
-async def create_meal_plan(form):
-    pass
+@router.get("/get/meal_plan/{id}", response_model=MealPlanOut)
+async def get_meal_plan(id:str,user:User=Depends(auth_user)):
+    return await db_get_user_meal_plan(id,user._id)
 
-@router.post("/update/meal_plan/{id}")
-async def update_meal_plan(id,form):
-    pass
+@router.post("/create/meal_plan", response_model=SuccessResponse)
+async def create_meal_plan(form:MealPlanCreate, user:User=Depends(auth_user)):
+    meal_plan_id = await db_create_meal_plan(user._id,form)
+    return {"status": "Success", "message": "Created Meal Plan Successfully!", "data":{"meal_plan_id":str(meal_plan_id)}}
 
-@router.post("/delete/meal_plan/{id}")
-async def delete_meal_plan(id):
-    pass
+@router.patch("/update/meal_plan/{id}", response_model=SuccessResponse)
+async def update_meal_plan(id:str,form:MealPlanUpdate,user:User=Depends(auth_user)):
+    meal_plan_id = await db_update_user_meal_plan(id,user._id,form)
+    return {"status": "Success", "message": "Updated Meal Plan Successfully!", "data":{"meal_plan_id":str(meal_plan_id)}}
 
-@router.post("/set_public/meal_plan/{id}")
-async def set_public_meal_plan(id):
-    pass
-
-@router.post("/set_private/meal_plan/{id}")
-async def set_private_meal_plan(id):
-    pass
+@router.delete("/delete/meal_plan/{id}")
+async def delete_meal_plan(id:str,user:User=Depends(auth_user)):
+    meal_plan_id = await db_delete_user_meal_plan(id,user._id)
+    return {"status": "Success", "message": "Deleted Meal Plan Successfully!", "data":{"meal_plan_id":str(meal_plan_id)}}

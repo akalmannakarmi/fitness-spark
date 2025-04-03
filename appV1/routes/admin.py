@@ -43,7 +43,7 @@ async def get_meal_pan(id, _:User=Depends(admin_user)):
 
 @router.post("/create/meal_plan", response_model=SuccessResponse)
 async def create_meal_plan(form:MealPlanCreate, user:User=Depends(admin_user)):
-    meal_plan_id = await db_create_meal_plan(str(user._id),form)
+    meal_plan_id = await db_create_meal_plan(user._id,form)
     return {"status": "Success", "message": "Created Meal Plan Successfully!", "data":{"meal_plan_id":str(meal_plan_id)}}
 
 @router.patch("/update/meal_plan/{id}", response_model=SuccessResponse)
