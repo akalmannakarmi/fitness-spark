@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, Field, field_serializer, field_validator
 from bson import ObjectId
 from typing import Any,List,Dict
-from datetime import date,time
+from datetime import datetime
 
 
 class SuccessResponse(BaseModel):
@@ -78,26 +78,18 @@ class RecipeCreate(BaseModel):
 
 
 class RecipeUpdate(BaseModel):
-    image: str
-    title: str
-    readyInMinutes: int
-    servings: int
-    vegetarian: bool
-    vegan: bool
-    glutenFree: bool
-    dairyFree: bool
-    cheep: bool
-    nutrients: List[Nutrient]
-    ingredients: List[Ingredient]
-    steps: List[str]
-
-
-
-
-
-
-
-
+    image: str = None
+    title: str = None
+    readyInMinutes: int = None
+    servings: int = None
+    vegetarian: bool = None
+    vegan: bool = None
+    glutenFree: bool = None
+    dairyFree: bool = None
+    cheep: bool = None
+    nutrients: List[Nutrient] = None
+    ingredients: List[Ingredient] = None
+    steps: List[str] = None
 
 
 
@@ -119,8 +111,8 @@ class MealPlansOut(BaseModel):
 
 
 class DailyPlan(BaseModel):
-    day: date
-    recipes: Dict[time,Recipe]
+    day: datetime
+    recipes: Dict[str,str]
     summary: str
 
 
@@ -151,8 +143,8 @@ class MealPlanCreate(BaseModel):
 
 
 class MealPlanUpdate(BaseModel):
-    title: str
-    description: str
-    dailyPlans: List[DailyPlan]
-    summary: str
-    private: bool
+    title: str = None
+    description: str = None
+    dailyPlans: List[DailyPlan] = None
+    summary: str = None
+    private: bool = None

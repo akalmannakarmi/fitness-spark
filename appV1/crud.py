@@ -39,8 +39,10 @@ async def db_get_recipe(id:str) -> str:
 
 
 
-async def db_create_meal_plan(meal_plan: MealPlanCreate) -> str:
-    result = await meal_plans_collection.insert_one(meal_plan.model_dump())
+async def db_create_meal_plan(user_id:str,meal_plan: MealPlanCreate) -> str:
+    meal_plan = meal_plan.model_dump()
+    meal_plan["user"] = user_id
+    result = await meal_plans_collection.insert_one(meal_plan)
     return str(result.inserted_id)
 
 async def db_update_meal_plan(id:str,meal_plan: MealPlanUpdate) -> str:
