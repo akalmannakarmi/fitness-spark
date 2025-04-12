@@ -1,4 +1,4 @@
-from .database import stats_collection
+from .database import stats_collection,database
 from config import Models, Actions
 from bson import ObjectId
 
@@ -22,8 +22,12 @@ async def db_get_models():
     cursor = stats_collection.find({}, {"_id": 1, "model": 1})
     results = []
     async for document in cursor:
-        results.append((str(document["_id"]), document["model"]))
+        count = await database[document["model"]].count_documents(filter={})
+        results.append({"_id":str(document["_id"]),"model":document["model"],"count":count})
     return results
 
 async def db_get_model(id:str):
-    return await stats_collection.find_one({"_id":ObjectId(id)})
+    model = await stats_collection.find_one({"_id":ObjectId(id)})
+    model["count"] = await database[model["model"]].count_documents({})
+    return model
+

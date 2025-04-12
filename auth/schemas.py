@@ -18,6 +18,7 @@ class UserOut(BaseModel):
     id: Any = Field(alias="_id")
     username: str
     email: str
+    groups: List[str]
 
     @field_serializer("id")
     def serialize_objectid(self, value: ObjectId) -> str:
@@ -35,6 +36,7 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     expires_at: float
+    admin: bool
 
 class SuccessResponse(BaseModel):
     status: str

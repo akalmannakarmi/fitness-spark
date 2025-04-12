@@ -27,10 +27,10 @@ APIV1_PREFIX = "/api/v1"
 
 
 class Models(str, Enum):
-    User = "user"
-    Stats = "stats"
-    V1_Recipe = "v1_recipe"
-    V1_Plan = "v1_plan"
+    User = "users"
+    Stats = "statistics"
+    Recipe = "recipes"
+    Plans = "meal_plans"
 
 
 class Actions(str, Enum):

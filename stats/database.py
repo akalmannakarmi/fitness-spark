@@ -4,4 +4,4 @@ from config import MONGO_URL, DATABASE_NAME
 client = AsyncIOMotorClient(MONGO_URL)
 database = client[DATABASE_NAME]
 
-stats_collection = database["stats"]
+stats_collection = database["statistics"]

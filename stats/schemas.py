@@ -3,15 +3,12 @@ from typing import Optional,List,Tuple,Dict,Any
 from bson import ObjectId
 
 class ModelsOut(BaseModel):
-    models: List[Tuple[str,str]]
-
-    @field_serializer("models")
-    def serialize_objectid(self, value):
-        return [(str(obj_id), name) for obj_id, name in value]
+    models: List[Dict[str,str|int]]
 
 class ModelOut(BaseModel):
     id: Any = Field(alias="_id")
     model: str
+    count: int
     logs: Dict[str, Dict[str, Dict[str, float]]]
 
     @field_serializer("id")
