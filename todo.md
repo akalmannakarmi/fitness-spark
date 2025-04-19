@@ -1,0 +1,8 @@
+- [ ] Paginate
+- [ ] Id and name only Lists
+- [ ] Search / filter
+- [ ] Update endpoint names
+- [ ] More Stats Collection
+- [ ] AI integration
+- [ ] OAuth Login
+- [ ] Update Profile
