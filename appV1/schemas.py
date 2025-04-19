@@ -96,6 +96,7 @@ class RecipeUpdate(BaseModel):
 
 class MealPlan(BaseModel):
     id: Any = Field(alias="_id")
+    user: Any
     title: str
     description: str
     summary: str
@@ -103,6 +104,10 @@ class MealPlan(BaseModel):
 
     @field_serializer("id")
     def serialize_objectid(self, value: ObjectId) -> str:
+        return str(value)
+    
+    @field_serializer("user")
+    def serialize_objectidUser(self, value: ObjectId) -> str:
         return str(value)
 
 
