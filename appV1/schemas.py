@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_serializer, field_validator
 from bson import ObjectId
-from typing import Any,List,Dict
+from typing import Optional,Any,List,Dict
 from datetime import datetime
 
 
@@ -29,6 +29,10 @@ class Recipe(BaseModel):
 
 class RecipesOut(BaseModel):
     recipes: List[Recipe]
+    page: int
+    limit: int
+    total: int
+    pages: int
 
 
 class Nutrient(BaseModel):
@@ -113,6 +117,10 @@ class MealPlan(BaseModel):
 
 class MealPlansOut(BaseModel):
     meal_plans: List[MealPlan]
+    page: int
+    limit: int
+    total: int
+    pages: int
 
 
 class DailyPlan(BaseModel):
@@ -153,3 +161,35 @@ class MealPlanUpdate(BaseModel):
     dailyPlans: List[DailyPlan] = None
     summary: str = None
     private: bool = None
+
+
+class RecipeFilter(BaseModel):
+    search: Optional[str] = None
+    vegetarian: Optional[bool] = None
+    vegan: Optional[bool] = None
+    glutenFree: Optional[bool] = None
+    dairyFree: Optional[bool] = None
+    cheep: Optional[bool] = None
+    min_readyInMinutes: Optional[int] = None
+    max_readyInMinutes: Optional[int] = None
+    include_ingredients: Optional[List[str]] = None
+    exclude_ingredients: Optional[List[str]] = None
+    nutrients: Optional[dict] = None
+
+    page: int = 1
+    limit: int = 10
+
+    @property
+    def skip(self):
+        return (self.page - 1) * self.limit
+
+
+class MealPlanFilter(BaseModel):
+    search: Optional[str] = None
+    recipe_ids: Optional[List[str]] = None
+    page: int = 1
+    limit: int = 10
+
+    @property
+    def skip(self):
+        return (self.page - 1) * self.limit

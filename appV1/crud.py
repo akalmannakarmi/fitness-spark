@@ -1,4 +1,4 @@
-from .schemas import RecipeCreate,RecipeUpdate,MealPlanCreate,MealPlanUpdate
+from .schemas import RecipeCreate,RecipeUpdate,MealPlanCreate,MealPlanUpdate,RecipeFilter,MealPlanFilter
 from .database import recipes_collection,meal_plans_collection
 from bson import ObjectId
 from utils.exception import CustomAPIException
@@ -27,9 +27,62 @@ async def db_delete_recipe(id: str) -> str:
         raise CustomAPIException(status_code=404, error="Not Found", message="Recipe not found")
     return id
 
-async def db_get_recipes() -> str:
-    result = recipes_collection.find({})
-    return await result.to_list()
+async def db_get_recipes(filters: RecipeFilter):
+    query = {}
+
+    # Text search
+    if filters.search:
+        query["$or"] = [
+            {"title": {"$regex": filters.search, "$options": "i"}},
+            {"description": {"$regex": filters.search, "$options": "i"}}
+        ]
+
+    # Boolean filters
+    for field in ["vegetarian", "vegan", "glutenFree", "dairyFree", "cheep"]:
+        val = getattr(filters, field)
+        if val is not None:
+            query[field] = val
+
+    # Time range
+    if filters.min_readyInMinutes or filters.max_readyInMinutes:
+        query["readyInMinutes"] = {}
+        if filters.min_readyInMinutes:
+            query["readyInMinutes"]["$gte"] = filters.min_readyInMinutes
+        if filters.max_readyInMinutes:
+            query["readyInMinutes"]["$lte"] = filters.max_readyInMinutes
+
+    # Ingredient filters
+    if filters.include_ingredients:
+        query["ingredients.name"] = {"$in": filters.include_ingredients}
+    if filters.exclude_ingredients:
+        query["ingredients.name"] = {"$nin": filters.exclude_ingredients}
+
+    # Nutrient filters
+    if filters.nutrients:
+        for name, bounds in filters.nutrients.items():
+            nutrient_filter = {
+                "nutrients": {
+                    "$elemMatch": {
+                        "name": name,
+                        **({ "$gte": bounds["min"] } if "min" in bounds else {}),
+                        **({ "$lte": bounds["max"] } if "max" in bounds else {})
+                    }
+                }
+            }
+            query.update(nutrient_filter)
+
+    # Fetch results
+    total = await recipes_collection.count_documents(query)
+
+    cursor = (
+        recipes_collection
+        .find(query)
+        .skip(filters.skip)
+        .limit(filters.limit)
+    )
+
+    recipes = await cursor.to_list(length=filters.limit)
+    return recipes, total
 
 async def db_get_recipe(id:str) -> str:
     result = await recipes_collection.find_one({"_id":ObjectId(id)})
@@ -64,10 +117,6 @@ async def db_delete_meal_plan(id: str) -> str:
         raise CustomAPIException(status_code=404, error="Not Found", message="Meal Plan not found")
     return id
 
-async def db_get_meal_plans() -> list:
-    result = meal_plans_collection.find({})
-    return await result.to_list()
-
 async def db_get_meal_plan(id:str) -> str:
     result = await meal_plans_collection.find_one({"_id":ObjectId(id)})
     if not result:
@@ -75,13 +124,63 @@ async def db_get_meal_plan(id:str) -> str:
     return result
 
 
-async def db_get_public_meal_plans() -> list:
-    result = meal_plans_collection.find({"private":False})
-    return await result.to_list()
+def build_meal_plan_query(filters: MealPlanFilter):
+    query = {}
 
-async def db_get_user_meal_plans(user_id:ObjectId) -> list:
-    result = meal_plans_collection.find({"user":user_id})
-    return await result.to_list()
+    if filters.recipe_ids:
+        query["dailyPlans.recipes"] = {"$in": filters.recipe_ids}
+
+    if filters.search:
+        query["$or"] = [
+            {"title": {"$regex": filters.search, "$options": "i"}},
+            {"description": {"$regex": filters.search, "$options": "i"}},
+        ]
+
+    return query
+
+async def db_get_public_meal_plans(filters: MealPlanFilter):
+    query = build_meal_plan_query(filters)
+    query["private"] = False
+
+    total = await meal_plans_collection.count_documents(query)
+    cursor = (
+        meal_plans_collection
+        .find(query)
+        .skip(filters.skip)
+        .limit(filters.limit)
+    )
+    meal_plans = await cursor.to_list(length=filters.limit)
+    return meal_plans, total
+
+
+async def db_get_user_meal_plans(user_id: ObjectId, filters: MealPlanFilter):
+    query = build_meal_plan_query(filters)
+    query["user"] = user_id
+
+    total = await meal_plans_collection.count_documents(query)
+    cursor = (
+        meal_plans_collection
+        .find(query)
+        .skip(filters.skip)
+        .limit(filters.limit)
+    )
+    meal_plans = await cursor.to_list(length=filters.limit)
+    return meal_plans, total
+
+
+async def db_get_meal_plans(filters: MealPlanFilter):
+    query = build_meal_plan_query(filters)
+
+    total = await meal_plans_collection.count_documents(query)
+    cursor = (
+        meal_plans_collection
+        .find(query)
+        .skip(filters.skip)
+        .limit(filters.limit)
+    )
+    meal_plans = await cursor.to_list(length=filters.limit)
+    return meal_plans, total
+
 
 async def db_get_user_meal_plan(id:str,user_id:ObjectId) -> str:
     result = await meal_plans_collection.find_one({"_id":ObjectId(id),"user":user_id})

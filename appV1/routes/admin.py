@@ -1,6 +1,6 @@
 from fastapi import APIRouter,Depends
-from ..schemas import SuccessResponse,RecipesOut,RecipeOut,RecipeCreate,RecipeUpdate
-from ..schemas import MealPlansOut,MealPlanOut,MealPlanCreate,MealPlanUpdate
+from ..schemas import SuccessResponse,RecipesOut,RecipeOut,RecipeCreate,RecipeUpdate,RecipeFilter
+from ..schemas import MealPlansOut,MealPlanOut,MealPlanCreate,MealPlanUpdate,MealPlanFilter
 from ..crud import db_get_recipes,db_get_recipe,db_create_recipe,db_update_recipe,db_delete_recipe
 from ..crud import db_get_meal_plans,db_get_meal_plan,db_create_meal_plan,db_update_meal_plan,db_delete_meal_plan
 from auth.wraper import User,admin_user
@@ -11,9 +11,19 @@ router = APIRouter()
 
 @router.get("/get/recipes",response_model=RecipesOut)
 @update_stats(Models.Recipe,Actions.Read)
-async def get_recipes(_:User=Depends(admin_user)):
-    recipes = await db_get_recipes()
-    return {"recipes":recipes}
+async def get_recipes(
+    filters: RecipeFilter = Depends(),
+    _: User = Depends(admin_user),
+):
+    recipes, total = await db_get_recipes(filters)
+
+    return {
+        "recipes": recipes,
+        "page": filters.page,
+        "limit": filters.limit,
+        "total": total,
+        "pages": (total + filters.limit - 1) // filters.limit
+    }
 
 @router.get("/get/recipe/{id}", response_model=RecipeOut)
 @update_stats(Models.Recipe,Actions.Read)
@@ -41,9 +51,15 @@ async def delete_recipe(id:str, _:User=Depends(admin_user)):
 
 @router.get("/get/meal_plans",response_model=MealPlansOut)
 @update_stats(Models.Plans,Actions.Read)
-async def get_meal_plans(_:User=Depends(admin_user)):
-    meal_plans = await db_get_meal_plans()
-    return {"meal_plans":meal_plans}
+async def get_meal_plans(user: User = Depends(admin_user), filters: MealPlanFilter = Depends()):
+    meal_plans, total = await db_get_meal_plans(filters)
+    return {
+        "meal_plans": meal_plans,
+        "total": total,
+        "page": filters.page,
+        "limit": filters.limit,
+        "pages": (total + filters.limit - 1) // filters.limit
+    }
 
 @router.get("/get/meal_plan/{id}", response_model=MealPlanOut)
 @update_stats(Models.Plans,Actions.Read)

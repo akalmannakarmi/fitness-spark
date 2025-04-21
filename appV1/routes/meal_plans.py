@@ -1,23 +1,35 @@
 from fastapi import APIRouter,Depends
 from ..crud import db_get_public_meal_plans,db_get_user_meal_plans,db_get_user_meal_plan,db_create_meal_plan,db_update_user_meal_plan,db_delete_user_meal_plan
-from ..schemas import SuccessResponse,MealPlansOut,MealPlanOut,MealPlanCreate,MealPlanUpdate
+from ..schemas import SuccessResponse,MealPlansOut,MealPlanOut,MealPlanCreate,MealPlanUpdate,MealPlanFilter
 from auth.wraper import User,auth_user
 from stats.wraper import update_stats
 from config import Models, Actions
 
 router = APIRouter()
 
-@router.get("/get/meal_plans",response_model=MealPlansOut)
-@update_stats(Models.Plans,Actions.Read)
-async def get_meal_plans(_:User=Depends(auth_user)):
-    meal_plans = await db_get_public_meal_plans()
-    return {"meal_plans":meal_plans}
+@router.get("/get/meal_plans", response_model=MealPlansOut)
+async def get_meal_plans(filters: MealPlanFilter = Depends()):
+    meal_plans, total = await db_get_public_meal_plans(filters)
+    return {
+        "meal_plans": meal_plans,
+        "total": total,
+        "page": filters.page,
+        "limit": filters.limit,
+        "pages": (total + filters.limit - 1) // filters.limit
+    }
 
-@router.get("/get/my/meal_plans",response_model=MealPlansOut)
-@update_stats(Models.Plans,Actions.Read)
-async def get_user_meal_plans(user:User=Depends(auth_user)):
-    meal_plans = await db_get_user_meal_plans(user._id)
-    return {"meal_plans":meal_plans}
+
+@router.get("/get/my/meal_plans", response_model=MealPlansOut)
+async def get_user_meal_plans(user: User = Depends(auth_user), filters: MealPlanFilter = Depends()):
+    meal_plans, total = await db_get_user_meal_plans(user._id, filters)
+    return {
+        "meal_plans": meal_plans,
+        "total": total,
+        "page": filters.page,
+        "limit": filters.limit,
+        "pages": (total + filters.limit - 1) // filters.limit
+    }
+
 
 @router.get("/get/meal_plan/{id}", response_model=MealPlanOut)
 @update_stats(Models.Plans,Actions.Read)
