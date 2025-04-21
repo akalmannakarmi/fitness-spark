@@ -66,3 +66,8 @@ async def update_user(id:str,form:UserUpdate) -> str:
 
 async def delete_user(id:str) -> None:
     await users_collection.delete_one({"_id":ObjectId(id)})
+
+async def db_list_users():
+    cursor = users_collection.find({}, {"_id": 1, "username": 1})
+    result = await cursor.to_list()
+    return result

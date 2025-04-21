@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
-from ..schemas import AdminUserCreate, UserUpdate, UserOut, UsersOut, SuccessResponse
-from ..crud import create_user_full, get_users, get_user, update_user, delete_user
+from ..schemas import AdminUserCreate, UserUpdate, UserOut, UsersOut, SuccessResponse,UsersListOut
+from ..crud import create_user_full, get_users, get_user, update_user, delete_user,db_list_users
 from ..wraper import admin_user
 from ..models import User
 from stats.wraper import update_stats,Models,Actions
@@ -13,6 +13,11 @@ async def create(form:AdminUserCreate,_:User=Depends(admin_user)):
     user_id = await create_user_full(form)
     return {"status": "Success", "message": "Created User Successfully!", "data":{"user_id":str(user_id)}}
 
+@router.get("/list/users/", response_model=UsersListOut)
+@update_stats(Models.User,Actions.Read)
+async def list_users(_:User=Depends(admin_user)):
+    users = await db_list_users()
+    return {"users":users}
 
 @router.get("/get/users/", response_model=UsersOut)
 @update_stats(Models.User,Actions.Read)

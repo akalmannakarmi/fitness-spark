@@ -193,3 +193,26 @@ class MealPlanFilter(BaseModel):
     @property
     def skip(self):
         return (self.page - 1) * self.limit
+
+class RecipeShort(BaseModel):
+    id: Any = Field(alias="_id")
+    title: str
+
+    @field_serializer("id")
+    def serialize_objectid(self, value: ObjectId) -> str:
+        return str(value)
+
+class RecipeListOut(BaseModel):
+    recipes: List[RecipeShort]
+
+
+class MealPlanShort(BaseModel):
+    id: Any = Field(alias="_id")
+    title: str
+
+    @field_serializer("id")
+    def serialize_objectid(self, value: ObjectId) -> str:
+        return str(value)
+
+class MealPlanOut(BaseModel):
+    mealPlans: List[MealPlanShort]

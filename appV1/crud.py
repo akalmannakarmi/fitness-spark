@@ -4,6 +4,11 @@ from bson import ObjectId
 from utils.exception import CustomAPIException
 
 
+async def db_list_recipes():
+    cursor = recipes_collection.find({}, {"_id": 1, "title": 1})
+    result = await cursor.to_list()
+    return result
+
 async def db_create_recipe(recipe: RecipeCreate) -> str:
     result = await recipes_collection.insert_one(recipe.model_dump())
     return str(result.inserted_id)

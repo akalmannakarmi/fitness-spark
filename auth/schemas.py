@@ -48,3 +48,14 @@ class UserUpdate(BaseModel):
     email: Optional[str] = None
     password: Optional[str] = None
     groups: Optional[List[str]] = None
+
+class UserShort(BaseModel):
+    id: Any = Field(alias="_id")
+    username: str
+
+    @field_serializer("id")
+    def serialize_objectid(self, value: ObjectId) -> str:
+        return str(value)
+
+class UsersListOut(BaseModel):
+    users: List[UserShort]
