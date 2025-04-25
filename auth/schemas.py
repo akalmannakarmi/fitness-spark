@@ -25,6 +25,10 @@ class UserOut(BaseModel):
         return str(value)
 
 class UsersOut(BaseModel):
+    page: int
+    limit: int
+    total: int
+    pages: int
     users: List[UserOut]
 
 class LoginRequest(BaseModel):

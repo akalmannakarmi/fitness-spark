@@ -20,16 +20,27 @@ async def list_users(_:User=Depends(admin_user)):
     return {"users":users}
 
 @router.get("/get/users/", response_model=UsersOut)
-@update_stats(Models.User,Actions.Read)
-async def get_all(_:User=Depends(admin_user)):
-    users = await get_users()
-    return {"users":users}
+@update_stats(Models.User, Actions.Read)
+async def get_all(
+    search: str = "",
+    page: int = 1,
+    limit: int = 10,
+    _: User = Depends(admin_user)
+):
+    users, total = await get_users(search=search, page=page, limit=limit)
+    return {
+        "users": users,
+        "page": page,
+        "limit": limit,
+        "total": total,
+        "pages": (total + limit - 1) // limit,
+    }
 
 @router.get("/get/user/{id}", response_model=UserOut)
 @update_stats(Models.User,Actions.Read)
 async def get(id:str, _:User=Depends(admin_user)):
     user:User = await get_user(id)
-    return {"_id":str(user._id),"username":user.username,"email":user.email}
+    return user
 
 
 @router.put("/update/user/{id}", response_model=SuccessResponse)

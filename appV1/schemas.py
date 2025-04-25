@@ -214,5 +214,5 @@ class MealPlanShort(BaseModel):
     def serialize_objectid(self, value: ObjectId) -> str:
         return str(value)
 
-class MealPlanOut(BaseModel):
+class MealPlanListOut(BaseModel):
     mealPlans: List[MealPlanShort]

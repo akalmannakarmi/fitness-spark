@@ -46,9 +46,21 @@ async def get_user(user_id:str) -> User:
         raise CustomAPIException(404,"User Not Found","User with the provided Id not found!")
     return User(**user)
 
-async def get_users():
-    users_cursor = users_collection.find({})
-    return await users_cursor.to_list()
+async def get_users(search: str = "", page: int = 1, limit: int = 10):
+    query = {}
+    if search:
+        query["username"] = {"$regex": search, "$options": "i"}
+
+    total = await users_collection.count_documents(query)
+
+    cursor = (
+        users_collection.find(query)
+        .skip((page - 1) * limit)
+        .limit(limit)
+    )
+
+    users = await cursor.to_list(length=limit)
+    return users, total
 
 async def update_user(id:str,form:UserUpdate) -> str:
     update = {}
@@ -60,7 +72,7 @@ async def update_user(id:str,form:UserUpdate) -> str:
         update["password"] = form.password
     if form.groups:
         update["groups"] = form.groups
-    
+    print(update)
     result = await users_collection.update_one({"_id":ObjectId(id)},{"$set": update})
     return str(id) if result.modified_count > 0 else None
 
