@@ -1,7 +1,7 @@
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import AsyncMongoClient
 from config import MONGO_URL, DATABASE_NAME
 
-client = AsyncIOMotorClient(MONGO_URL)
+client = AsyncMongoClient(MONGO_URL)
 database = client[DATABASE_NAME]
 
 users_collection = database["users"]
