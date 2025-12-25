@@ -1,15 +1,15 @@
-# Use the official Python image
-FROM python:3.13.2-slim
+FROM python:3.13-slim
 
-# Set work directory
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
-# Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
 COPY . .
 
-# Command to run the server
-CMD ["python", "main.py"]
+EXPOSE 8000
+
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

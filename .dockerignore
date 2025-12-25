@@ -1,0 +1,12 @@
+__pycache__
+.pytest_cache
+*.json
+*.csv
+.env
+
+recipes
+Dockerfile
+compose.yml
+todo.md
+fetchdata.py
+

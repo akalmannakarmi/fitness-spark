@@ -13,12 +13,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 SCHEMA = "http"
 HOST = "0.0.0.0"
-PORT = 9000
+PORT = 8000
 
 if HOST == "0.0.0.0":
     BASE_URL = f"{SCHEMA}://127.0.0.1:{PORT}"
-else: 
-    BASE_URL = f"{SCHEMA}://{HOST}:{PORT}" 
+else:
+    BASE_URL = f"{SCHEMA}://{HOST}:{PORT}"
 
 AUTH_PREFIX = "/auth"
 STATS_PREFIX = "/stats"

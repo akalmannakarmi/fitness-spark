@@ -1,15 +1,7 @@
 services:
-  fitness-spark:
+  web:
     build: .
-    container_name: fitness-spark
-    restart: always
-    environment:
-      - VIRTUAL_HOST=fitness-spark-api.akal.com.np 
-    networks:
-      - frontend
-    expose:
-      - "9000"
-
-networks:
-  frontend:
-    external: true
+    ports:
+      - "8000:8000"
+    env_file:
+        - .env
