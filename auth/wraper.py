@@ -1,23 +1,32 @@
-from fastapi import Request, HTTPException
-from .utils import verify_token,get_token
-from .crud import get_user
-from .models import User
+from typing import TYPE_CHECKING
 
-async def auth_user(request:Request,token:str=None):
+from fastapi import HTTPException, Request
+
+from .crud import get_user
+from .utils import get_token, verify_token
+
+if TYPE_CHECKING:
+    from .models import User
+
+
+async def auth_user(request: Request, token: str | None = None):
     if token is None:
         token = get_token(request)
+        if token is None:
+            raise HTTPException(status_code=401, detail="Invalid or missing token")
 
     try:
         user_id = verify_token(token)
-        user:User = await get_user(user_id)
+        user: User = await get_user(user_id)
         return user
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Failed to authenticate. Exception: {e}")
+        raise HTTPException(
+            status_code=401, detail=f"Failed to authenticate. Exception: {e}"
+        ) from None
 
 
-async def admin_user(request:Request,token:str=None):
-    user:User = await auth_user(request,token)
+async def admin_user(request: Request, token: str | None = None):
+    user: User = await auth_user(request, token)
     if "admin" in user.groups:
         return user
-    raise HTTPException(status_code=403, detail=f"Admin only!")
-    
+    raise HTTPException(status_code=403, detail="Admin only!")

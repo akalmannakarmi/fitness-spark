@@ -1,15 +1,18 @@
-from pydantic import BaseModel,field_serializer,Field
-from typing import Optional,List,Tuple,Dict,Any
+from typing import Any
+
 from bson import ObjectId
+from pydantic import BaseModel, Field, field_serializer
+
 
 class ModelsOut(BaseModel):
-    models: List[Dict[str,str|int]]
+    models: list[dict[str, str | int]]
+
 
 class ModelOut(BaseModel):
     id: Any = Field(alias="_id")
     model: str
     count: int
-    logs: Dict[str, Dict[str, Dict[str, float]]]
+    logs: dict[str, dict[str, dict[str, float]]]
 
     @field_serializer("id")
     def serialize_objectid(self, value: ObjectId) -> str:

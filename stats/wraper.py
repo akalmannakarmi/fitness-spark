@@ -1,9 +1,11 @@
-from fastapi import HTTPException
-import functools
 import asyncio
+import functools
 import time
 
-from config import Models, Actions
+from fastapi import HTTPException
+
+from config import Actions, Models
+
 from .crud import db_update_stats
 
 
@@ -22,7 +24,13 @@ def update_stats(model: Models, action: Actions):
             finally:
                 end_time = time.perf_counter()
                 now = int(time.time() // 60)
-                asyncio.create_task(db_update_stats(model, action, status_code, now, start_time, end_time))
+                asyncio.create_task(
+                    db_update_stats(
+                        model, action, status_code, now, start_time, end_time
+                    )
+                )
             return result
+
         return wrapper
+
     return decorator

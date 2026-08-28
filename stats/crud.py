@@ -1,9 +1,20 @@
-from .database import stats_collection,database
-from config import Models, Actions
+from typing import Any
+
 from bson import ObjectId
 
+from config import Actions, Models
 
-async def db_update_stats(model: Models, action: Actions, status_code: int, now: int, start_time: float, end_time: float):
+from .database import database, stats_collection
+
+
+async def db_update_stats(
+    model: Models,
+    action: Actions,
+    status_code: int,
+    now: int,
+    start_time: float,
+    end_time: float,
+):
     elapsed_time = end_time - start_time
     print(f"Execution time: {elapsed_time:.4f} seconds")
     await stats_collection.update_one(
@@ -18,16 +29,23 @@ async def db_update_stats(model: Models, action: Actions, status_code: int, now:
         upsert=True,
     )
 
+
 async def db_get_models():
     cursor = stats_collection.find({}, {"_id": 1, "model": 1})
     results = []
     async for document in cursor:
         count = await database[document["model"]].count_documents(filter={})
-        results.append({"_id":str(document["_id"]),"model":document["model"],"count":count})
+        results.append(
+            {"_id": str(document["_id"]), "model": document["model"], "count": count}
+        )
     return results
 
-async def db_get_model(id:str):
-    model = await stats_collection.find_one({"_id":ObjectId(id)})
+
+async def db_get_model(id: str) -> dict[str, Any] | None:
+    model: dict[str, Any] | None = await stats_collection.find_one(
+        {"_id": ObjectId(id)}
+    )
+    if model is None:
+        return None
     model["count"] = await database[model["model"]].count_documents({})
     return model
-

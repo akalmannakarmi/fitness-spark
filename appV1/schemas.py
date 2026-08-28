@@ -1,13 +1,14 @@
-from pydantic import BaseModel, Field, field_serializer, field_validator
-from bson import ObjectId
-from typing import Optional,Any,List,Dict
 from datetime import datetime
+from typing import Any
+
+from bson import ObjectId
+from pydantic import BaseModel, Field, field_serializer
 
 
 class SuccessResponse(BaseModel):
     status: str
     message: str
-    data: dict
+    data: dict[str, Any]
 
 
 class Recipe(BaseModel):
@@ -28,7 +29,7 @@ class Recipe(BaseModel):
 
 
 class RecipesOut(BaseModel):
-    recipes: List[Recipe]
+    recipes: list[Recipe]
     page: int
     limit: int
     total: int
@@ -39,6 +40,7 @@ class Nutrient(BaseModel):
     name: str
     amount: float
     unit: str
+
 
 class Ingredient(BaseModel):
     name: str
@@ -57,9 +59,9 @@ class RecipeOut(BaseModel):
     glutenFree: bool
     dairyFree: bool
     cheep: bool
-    nutrients: List[Nutrient]
-    ingredients: List[Ingredient]
-    steps: List[str]
+    nutrients: list[Nutrient]
+    ingredients: list[Ingredient]
+    steps: list[str]
 
     @field_serializer("id")
     def serialize_objectid(self, value: ObjectId) -> str:
@@ -76,26 +78,24 @@ class RecipeCreate(BaseModel):
     glutenFree: bool
     dairyFree: bool
     cheep: bool
-    nutrients: List[Nutrient]
-    ingredients: List[Ingredient]
-    steps: List[str]
+    nutrients: list[Nutrient]
+    ingredients: list[Ingredient]
+    steps: list[str]
 
 
 class RecipeUpdate(BaseModel):
-    image: str = None
-    title: str = None
-    readyInMinutes: int = None
-    servings: int = None
-    vegetarian: bool = None
-    vegan: bool = None
-    glutenFree: bool = None
-    dairyFree: bool = None
-    cheep: bool = None
-    nutrients: List[Nutrient] = None
-    ingredients: List[Ingredient] = None
-    steps: List[str] = None
-
-
+    image: str | None = None
+    title: str | None = None
+    readyInMinutes: int | None = None
+    servings: int | None = None
+    vegetarian: bool | None = None
+    vegan: bool | None = None
+    glutenFree: bool | None = None
+    dairyFree: bool | None = None
+    cheep: bool | None = None
+    nutrients: list[Nutrient] | None = None
+    ingredients: list[Ingredient] | None = None
+    steps: list[str] | None = None
 
 
 class MealPlan(BaseModel):
@@ -109,14 +109,14 @@ class MealPlan(BaseModel):
     @field_serializer("id")
     def serialize_objectid(self, value: ObjectId) -> str:
         return str(value)
-    
+
     @field_serializer("user")
-    def serialize_objectidUser(self, value: ObjectId) -> str:
+    def serialize_objectid_user(self, value: ObjectId) -> str:
         return str(value)
 
 
 class MealPlansOut(BaseModel):
-    meal_plans: List[MealPlan]
+    meal_plans: list[MealPlan]
     page: int
     limit: int
     total: int
@@ -125,7 +125,7 @@ class MealPlansOut(BaseModel):
 
 class DailyPlan(BaseModel):
     day: datetime
-    recipes: Dict[str,str]
+    recipes: dict[str, str]
     summary: str
 
 
@@ -134,14 +134,14 @@ class MealPlanOut(BaseModel):
     user: Any
     title: str
     description: str
-    dailyPlans: List[DailyPlan]
+    dailyPlans: list[DailyPlan]
     summary: str
     private: bool
 
     @field_serializer("id")
     def serialize_objectid(self, value: ObjectId) -> str:
         return str(value)
-    
+
     @field_serializer("user")
     def serialize_objectid_user(self, value: ObjectId) -> str:
         return str(value)
@@ -150,31 +150,31 @@ class MealPlanOut(BaseModel):
 class MealPlanCreate(BaseModel):
     title: str
     description: str
-    dailyPlans: List[DailyPlan]
+    dailyPlans: list[DailyPlan]
     summary: str
     private: bool
 
 
 class MealPlanUpdate(BaseModel):
-    title: str = None
-    description: str = None
-    dailyPlans: List[DailyPlan] = None
-    summary: str = None
-    private: bool = None
+    title: str | None = None
+    description: str | None = None
+    dailyPlans: list[DailyPlan] | None = None
+    summary: str | None = None
+    private: bool | None = None
 
 
 class RecipeFilter(BaseModel):
-    search: Optional[str] = None
-    vegetarian: Optional[bool] = None
-    vegan: Optional[bool] = None
-    glutenFree: Optional[bool] = None
-    dairyFree: Optional[bool] = None
-    cheep: Optional[bool] = None
-    min_readyInMinutes: Optional[int] = None
-    max_readyInMinutes: Optional[int] = None
-    include_ingredients: Optional[List[str]] = None
-    exclude_ingredients: Optional[List[str]] = None
-    nutrients: Optional[dict] = None
+    search: str | None = None
+    vegetarian: bool | None = None
+    vegan: bool | None = None
+    glutenFree: bool | None = None
+    dairyFree: bool | None = None
+    cheep: bool | None = None
+    min_readyInMinutes: int | None = None
+    max_readyInMinutes: int | None = None
+    include_ingredients: list[str] | None = None
+    exclude_ingredients: list[str] | None = None
+    nutrients: dict[str, Any] | None = None
 
     page: int = 1
     limit: int = 10
@@ -185,14 +185,15 @@ class RecipeFilter(BaseModel):
 
 
 class MealPlanFilter(BaseModel):
-    search: Optional[str] = None
-    recipe_ids: Optional[List[str]] = None
+    search: str | None = None
+    recipe_ids: list[str] | None = None
     page: int = 1
     limit: int = 10
 
     @property
     def skip(self):
         return (self.page - 1) * self.limit
+
 
 class RecipeShort(BaseModel):
     id: Any = Field(alias="_id")
@@ -202,8 +203,9 @@ class RecipeShort(BaseModel):
     def serialize_objectid(self, value: ObjectId) -> str:
         return str(value)
 
+
 class RecipeListOut(BaseModel):
-    recipes: List[RecipeShort]
+    recipes: list[RecipeShort]
 
 
 class MealPlanShort(BaseModel):
@@ -214,5 +216,6 @@ class MealPlanShort(BaseModel):
     def serialize_objectid(self, value: ObjectId) -> str:
         return str(value)
 
+
 class MealPlanListOut(BaseModel):
-    mealPlans: List[MealPlanShort]
+    mealPlans: list[MealPlanShort]

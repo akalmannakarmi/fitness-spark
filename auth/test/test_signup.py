@@ -1,25 +1,31 @@
-import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+import uuid
 
 import httpx
 import pytest
-from config import BASE_URL,AUTH_PREFIX
-import uuid
+
+from config import AUTH_PREFIX, BASE_URL
 
 
 @pytest.mark.asyncio
-async def test_Simple_signup():
+async def test_simple_signup():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
         username = str(uuid.uuid4())
         email = f"{username}@test.com"
-        password = f"password"
+        password = "password"
 
-        response = await client.post("/signup",json={
-            "username":username,
-            "email":email,
-            "password":password,
-        })
+        response = await client.post(
+            "/signup",
+            json={
+                "username": username,
+                "email": email,
+                "password": password,
+            },
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -27,81 +33,90 @@ async def test_Simple_signup():
 
 
 @pytest.mark.asyncio
-async def test_User_Already_Exists():
+async def test_user_already_exists():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
         username = str(uuid.uuid4())
         email = f"{username}@test.com"
-        password = f"password"
+        password = "password"
 
-        response = await client.post("/signup",json={
-            "username":username,
-            "email":email,
-            "password":password,
-        })
+        response = await client.post(
+            "/signup",
+            json={
+                "username": username,
+                "email": email,
+                "password": password,
+            },
+        )
 
         assert response.status_code == 200
 
-        response = await client.post("/signup",json={
-            "username":username,
-            "email":email,
-            "password":password,
-        })
+        response = await client.post(
+            "/signup",
+            json={
+                "username": username,
+                "email": email,
+                "password": password,
+            },
+        )
 
         assert response.status_code == 400
 
 
 @pytest.mark.asyncio
-async def test_Missing_Username():
+async def test_missing_username():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
         username = str(uuid.uuid4())
         email = f"{username}@test.com"
-        password = f"password"
+        password = "password"
 
-        response = await client.post("/signup",json={
-            "email":email,
-            "password":password,
-        })
+        response = await client.post(
+            "/signup",
+            json={
+                "email": email,
+                "password": password,
+            },
+        )
 
         assert response.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_Missing_Email():
+async def test_missing_email():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
         username = str(uuid.uuid4())
-        email = f"{username}@test.com"
-        password = f"password"
+        password = "password"
 
-        response = await client.post("/signup",json={
-            "username":username,
-            "password":password,
-        })
+        response = await client.post(
+            "/signup",
+            json={
+                "username": username,
+                "password": password,
+            },
+        )
 
         assert response.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_Missing_Password():
+async def test_missing_password():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
         username = str(uuid.uuid4())
         email = f"{username}@test.com"
-        password = f"password"
 
-        response = await client.post("/signup",json={
-            "username":username,
-            "email":email,
-        })
+        response = await client.post(
+            "/signup",
+            json={
+                "username": username,
+                "email": email,
+            },
+        )
 
         assert response.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_Missing_Fields():
+async def test_missing_fields():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
-        username = str(uuid.uuid4())
-        email = f"{username}@test.com"
-        password = f"password"
-
         response = await client.post("/signup")
 
         assert response.status_code == 422

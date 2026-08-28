@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from auth.routes import router as authRouter
-from stats.routes import router as statsRouter
-from appV1.routes import router as appV1Router
-from config import AUTH_PREFIX,STATS_PREFIX,APIV1_PREFIX,CORS_ORIGINS
+
+from appV1.routes import router as app_v1_router
+from auth.routes import router as auth_router
+from config import APIV1_PREFIX, AUTH_PREFIX, CORS_ORIGINS, STATS_PREFIX
+from stats.routes import router as stats_router
 from utils.exception import register_exception_handlers
 
 app = FastAPI()
@@ -17,11 +18,12 @@ app.add_middleware(
 
 register_exception_handlers(app)
 
-@app.get("/",tags=["Root"])
-async def root():
-    return {"message":"Welcome to fitness spark"}
+
+@app.get("/", tags=["Root"])
+async def root() -> dict[str, str]:
+    return {"message": "Welcome to fitness spark"}
 
 
-app.include_router(authRouter, tags=["Auth"], prefix=AUTH_PREFIX)
-app.include_router(statsRouter, tags=["Stats"], prefix=STATS_PREFIX)
-app.include_router(appV1Router, tags=["V1"], prefix=APIV1_PREFIX)
+app.include_router(auth_router, tags=["Auth"], prefix=AUTH_PREFIX)
+app.include_router(stats_router, tags=["Stats"], prefix=STATS_PREFIX)
+app.include_router(app_v1_router, tags=["V1"], prefix=APIV1_PREFIX)

@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
-from ..schemas import ModelsOut, ModelOut
-from ..crud import db_get_models, db_get_model
-from ..wraper import update_stats, Models, Actions
+
 from auth.wraper import admin_user
+from config import Actions, Models
+
+from ..crud import db_get_model, db_get_models
+from ..schemas import ModelOut, ModelsOut
+from ..wraper import update_stats
 
 router = APIRouter()
 

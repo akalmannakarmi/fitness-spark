@@ -1,24 +1,28 @@
-import sys
 import os
+import sys
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+import asyncio
+import time
+import uuid
 
 import httpx
 import pytest
-import uuid
-import time
-import asyncio
 
-from config import BASE_URL,AUTH_PREFIX
+from config import AUTH_PREFIX, BASE_URL
+
 
 @pytest.mark.asyncio
-async def test_Simple_Get_Users():
+async def test_simple_get_users():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
-        response = await client.post("/login",json={
-            "username":"admin",
-            "password":"admin",
-        })
+        response = await client.post(
+            "/login",
+            json={
+                "username": "admin",
+                "password": "admin",
+            },
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -27,7 +31,7 @@ async def test_Simple_Get_Users():
 
         headers = {"Authorization": f"Bearer {access_token}"}
 
-        response = await client.get("/admin/get/users/",headers=headers)
+        response = await client.get("/admin/get/users/", headers=headers)
 
         assert response.status_code == 200
 
@@ -37,13 +41,16 @@ async def test_unauthorized():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
         username = str(uuid.uuid4())
         email = f"{username}@test.com"
-        password = f"password"
+        password = "password"
 
-        response = await client.post("/signup",json={
-            "username":username,
-            "email":email,
-            "password":password,
-        })
+        response = await client.post(
+            "/signup",
+            json={
+                "username": username,
+                "email": email,
+                "password": password,
+            },
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -52,17 +59,21 @@ async def test_unauthorized():
 
         headers = {"Authorization": f"Bearer {access_token}"}
 
-        response = await client.get("/admin/get/users/",headers=headers)
+        response = await client.get("/admin/get/users/", headers=headers)
 
         assert response.status_code == 403
 
+
 @pytest.mark.asyncio
-async def test_Stress_Test():
+async def test_stress_test():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
-        response = await client.post("/login",json={
-            "username":"admin",
-            "password":"admin",
-        })
+        response = await client.post(
+            "/login",
+            json={
+                "username": "admin",
+                "password": "admin",
+            },
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -72,7 +83,7 @@ async def test_Stress_Test():
         headers = {"Authorization": f"Bearer {access_token}"}
 
         async def create_user_and_login(headers):
-            response = await client.get("/admin/get/users/",headers=headers)
+            response = await client.get("/admin/get/users/", headers=headers)
 
             assert response.status_code == 200
 
@@ -85,5 +96,4 @@ async def test_Stress_Test():
         await asyncio.gather(*tasks)
 
         end_time = time.time()
-        print(f"[Completed in {end_time - start_time:.2f} secs.]",end=" ")
-
+        print(f"[Completed in {end_time - start_time:.2f} secs.]", end=" ")

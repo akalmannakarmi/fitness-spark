@@ -1,6 +1,7 @@
 import os
+from enum import StrEnum
+
 from dotenv import load_dotenv
-from enum import Enum
 
 load_dotenv()
 
@@ -30,14 +31,14 @@ ADMIN_PREFIX = "/admin"
 APIV1_PREFIX = "/api/v1"
 
 
-class Models(str, Enum):
+class Models(StrEnum):
     User = "users"
     Stats = "statistics"
     Recipe = "recipes"
     Plans = "meal_plans"
 
 
-class Actions(str, Enum):
+class Actions(StrEnum):
     Create = "create"
     Read = "read"
     Update = "update"

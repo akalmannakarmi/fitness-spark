@@ -1,5 +1,6 @@
-import requests
 import json
+
+import requests
 
 cuisines = [
     "African",
@@ -9,7 +10,7 @@ cuisines = [
     "Cajun",
     "Caribbean",
     "Chinese",
-    "Eastern European", 
+    "Eastern European",
     "European",
     "French",
     "German",
@@ -30,19 +31,19 @@ cuisines = [
     "Thai",
     "Vietnamese",
 ]
-apiKey = ""
+api_key = ""
 URL = "https://api.spoonacular.com/recipes/complexSearch?apiKey={apiKey}&addRecipeNutrition=True&addRecipeInstructions=True"
 cuisine = "Vietnamese"
 
-number=100
-offset=0
-totalResults = 1
+number = 100
+offset = 0
+total_results = 1
 
-while offset<totalResults:
+while offset < total_results:
     response = requests.get(f"{URL}&cuisine={cuisine}&number={number}&offset={offset}")
     data = response.json()
-    totalResults = data["totalResults"]
-    offset+=number
+    total_results = data["totalResults"]
+    offset += number
 
-    with open(f"recipies_{cuisine.lower()}_{offset}.json","w") as f:
-        json.dump(data,f,indent=4)
+    with open(f"recipies_{cuisine.lower()}_{offset}.json", "w") as f:
+        json.dump(data, f, indent=4)

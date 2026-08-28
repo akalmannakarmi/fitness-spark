@@ -1,24 +1,28 @@
-import sys
 import os
+import sys
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+import asyncio
+import time
+import uuid
 
 import httpx
 import pytest
-import uuid
-import time
-import asyncio
 
-from config import BASE_URL,AUTH_PREFIX
+from config import AUTH_PREFIX, BASE_URL
+
 
 @pytest.mark.asyncio
-async def test_Simple_Get_User_By_Id():
+async def test_simple_get_user_by_id():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
-        response = await client.post("/login",json={
-            "username":"admin",
-            "password":"admin",
-        })
+        response = await client.post(
+            "/login",
+            json={
+                "username": "admin",
+                "password": "admin",
+            },
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -32,23 +36,27 @@ async def test_Simple_Get_User_By_Id():
         password = "password"
         groups = ["user"]
 
-        response = await client.post("/admin/create/user",headers=headers,json={
-            "username": username,
-            "email":email,
-            "password":password,
-            "groups": groups,
-        })
+        response = await client.post(
+            "/admin/create/user",
+            headers=headers,
+            json={
+                "username": username,
+                "email": email,
+                "password": password,
+                "groups": groups,
+            },
+        )
 
         assert response.status_code == 200
         data = response.json()
-        
+
         assert "status" in data
         assert data["status"] == "Success"
         assert "data" in data
         assert "user_id" in data["data"]
-        userId = data["data"]["user_id"]
+        user_id = data["data"]["user_id"]
 
-        response = await client.get(f"/admin/get/user/{userId}",headers=headers)
+        response = await client.get(f"/admin/get/user/{user_id}", headers=headers)
 
         assert response.status_code == 200
 
@@ -56,10 +64,13 @@ async def test_Simple_Get_User_By_Id():
 @pytest.mark.asyncio
 async def test_unauthorized():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
-        response = await client.post("/login",json={
-            "username":"admin",
-            "password":"admin",
-        })
+        response = await client.post(
+            "/login",
+            json={
+                "username": "admin",
+                "password": "admin",
+            },
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -73,31 +84,38 @@ async def test_unauthorized():
         password = "password"
         groups = ["user"]
 
-        response = await client.post("/admin/create/user",headers=headers,json={
-            "username": username,
-            "email":email,
-            "password":password,
-            "groups": groups,
-        })
+        response = await client.post(
+            "/admin/create/user",
+            headers=headers,
+            json={
+                "username": username,
+                "email": email,
+                "password": password,
+                "groups": groups,
+            },
+        )
 
         assert response.status_code == 200
         data = response.json()
-        
+
         assert "status" in data
         assert data["status"] == "Success"
         assert "data" in data
         assert "user_id" in data["data"]
-        userId = data["data"]["user_id"]
+        user_id = data["data"]["user_id"]
 
         username = str(uuid.uuid4())
         email = f"{username}@test.com"
-        password = f"password"
+        password = "password"
 
-        response = await client.post("/signup",json={
-            "username":username,
-            "email":email,
-            "password":password,
-        })
+        response = await client.post(
+            "/signup",
+            json={
+                "username": username,
+                "email": email,
+                "password": password,
+            },
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -105,7 +123,7 @@ async def test_unauthorized():
         access_token = data["access_token"]
 
         headers = {"Authorization": f"Bearer {access_token}"}
-        response = await client.get(f"/admin/get/user/{userId}",headers=headers)
+        response = await client.get(f"/admin/get/user/{user_id}", headers=headers)
 
         assert response.status_code == 403
 
@@ -113,10 +131,13 @@ async def test_unauthorized():
 @pytest.mark.asyncio
 async def test_missing_field():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
-        response = await client.post("/login",json={
-            "username":"admin",
-            "password":"admin",
-        })
+        response = await client.post(
+            "/login",
+            json={
+                "username": "admin",
+                "password": "admin",
+            },
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -124,48 +145,55 @@ async def test_missing_field():
         access_token = data["access_token"]
 
         headers = {"Authorization": f"Bearer {access_token}"}
-        
+
         username = str(uuid.uuid4())
         email = f"{username}@test.com"
         password = "password"
         groups = ["user"]
 
-        response = await client.post("/admin/create/user",headers=headers,json={
-            "username": username,
-            "email":email,
-            "password":password,
-        })
+        response = await client.post(
+            "/admin/create/user",
+            headers=headers,
+            json={
+                "username": username,
+                "email": email,
+                "password": password,
+            },
+        )
         assert response.status_code == 422
 
-        response = await client.post("/admin/create/user",headers=headers,json={
-            "username": username,
-            "email":email,
-            "groups":groups
-        })
+        response = await client.post(
+            "/admin/create/user",
+            headers=headers,
+            json={"username": username, "email": email, "groups": groups},
+        )
         assert response.status_code == 422
 
-        response = await client.post("/admin/create/user",headers=headers,json={
-            "username": username,
-            "password":password,
-            "groups":groups
-        })
+        response = await client.post(
+            "/admin/create/user",
+            headers=headers,
+            json={"username": username, "password": password, "groups": groups},
+        )
         assert response.status_code == 422
 
-        response = await client.post("/admin/create/user",headers=headers,json={
-            "email": email,
-            "password":password,
-            "groups":groups
-        })
+        response = await client.post(
+            "/admin/create/user",
+            headers=headers,
+            json={"email": email, "password": password, "groups": groups},
+        )
         assert response.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_Stress_Test():
+async def test_stress_test():
     async with httpx.AsyncClient(base_url=f"{BASE_URL}{AUTH_PREFIX}") as client:
-        response = await client.post("/login",json={
-            "username":"admin",
-            "password":"admin",
-        })
+        response = await client.post(
+            "/login",
+            json={
+                "username": "admin",
+                "password": "admin",
+            },
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -180,23 +208,27 @@ async def test_Stress_Test():
             password = "password"
             groups = ["user"]
 
-            response = await client.post("/admin/create/user",headers=headers,json={
-                "username": username,
-                "email":email,
-                "password":password,
-                "groups": groups,
-            })
+            response = await client.post(
+                "/admin/create/user",
+                headers=headers,
+                json={
+                    "username": username,
+                    "email": email,
+                    "password": password,
+                    "groups": groups,
+                },
+            )
 
             assert response.status_code == 200
             data = response.json()
-            
+
             assert "status" in data
             assert data["status"] == "Success"
             assert "data" in data
             assert "user_id" in data["data"]
-            userId = data["data"]["user_id"]
+            user_id = data["data"]["user_id"]
 
-            response = await client.get(f"/admin/get/user/{userId}",headers=headers)
+            response = await client.get(f"/admin/get/user/{user_id}", headers=headers)
 
             assert response.status_code == 200
 
@@ -209,5 +241,4 @@ async def test_Stress_Test():
         await asyncio.gather(*tasks)
 
         end_time = time.time()
-        print(f"[Completed in {end_time - start_time:.2f} secs.]",end=" ")
-
+        print(f"[Completed in {end_time - start_time:.2f} secs.]", end=" ")

@@ -1,3 +1,1 @@
-from fastapi import APIRouter
-
-from .stats import router
+from .stats import router as router

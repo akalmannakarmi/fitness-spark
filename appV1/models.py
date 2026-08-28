@@ -1,17 +1,19 @@
+from datetime import date, time
+
 from bson import ObjectId
-from typing import List,Dict
-from datetime import date
-from datetime import time
+
 
 class Nutrient:
     name: str
     amount: float
     unit: str
 
+
 class Ingredient:
     name: str
     amount: float
     unit: str
+
 
 class Recipe:
     _id: ObjectId
@@ -24,14 +26,14 @@ class Recipe:
     glutenFree: bool
     dairyFree: bool
     cheep: bool
-    nutrients: List[Nutrient]
-    ingredients: List[Ingredient]
-    steps: List[str]
+    nutrients: list[Nutrient]
+    ingredients: list[Ingredient]
+    steps: list[str]
 
 
 class DailyPlan:
     day: date
-    recipes: Dict[time,Recipe]
+    recipes: dict[time, Recipe]
     summary: str
 
 
@@ -40,6 +42,6 @@ class MealPlan:
     user: ObjectId
     title: str
     description: str
-    dailyPlans: List[DailyPlan]
+    dailyPlans: list[DailyPlan]
     summary: str
     private: bool

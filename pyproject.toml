@@ -1,3 +1,96 @@
+[project]
+name = "fitness-spark"
+version = "1.0.0"
+description = "Fitness meal-planning API"
+requires-python = ">=3.13"
+dependencies = [
+    "bcrypt>=4.3.0",
+    "fastapi>=0.115.8",
+    "httpx>=0.28.1",
+    "motor>=3.7.0",
+    "pydantic>=2.10.6",
+    "pymongo>=4.11.1",
+    "python-dotenv>=1.0.1",
+    "PyJWT>=2.10.1",
+    "requests>=2.32.3",
+    "uvicorn>=0.34.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.14.1",
+    "pre-commit>=4.0.1",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.25.3",
+    "pytest-xdist>=3.6.1",
+    "ruff>=0.9.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["admin", "appV1", "auth", "stats", "utils"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "TCH"]
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    "fastapi.Body",
+    "fastapi.Cookie",
+    "fastapi.Depends",
+    "fastapi.Header",
+    "fastapi.Path",
+    "fastapi.Query",
+]
+
+[tool.ruff.lint.flake8-builtins]
+builtins-ignorelist = ["id"]
+
+[tool.ruff.lint.per-file-ignores]
+"appV1/**" = ["N999"]
+"appV1/models.py" = ["N815", "N816"]
+"appV1/schemas.py" = ["N815", "N816"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "admin.*",
+    "appV1.*",
+    "auth.*",
+    "stats.*",
+    "utils.*",
+    "loader",
+    "fetchdata",
+    "tools",
+]
+# Legacy code predates type annotations; keep strict type checking for real
+# errors (arg-type, assignment, return-value, ...) while relaxing only the
+# missing-annotation checks that this codebase does not satisfy yet.
+disable_error_code = [
+    "no-untyped-def",
+    "untyped-decorator",
+    "no-untyped-call",
+    "var-annotated",
+]
+
 [tool.pytest.ini_options]
 asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "function"
