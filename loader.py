@@ -29,7 +29,7 @@ async def read_and_insert_json_files():
                             })
                     
                     for ingredient in recipe.get("nutrition",{}).get("ingredients",[]):
-                        if isinstance(nutrient,dict):
+                        if isinstance(ingredient,dict):
                             ingredients.append({
                                 "name": ingredient.get("name",""),
                                 "amount": ingredient.get("amount",-1),

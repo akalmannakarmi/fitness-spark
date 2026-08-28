@@ -1,8 +1,8 @@
-- [x] Paginate
-- [x] Id and name only Lists
-- [x] Search / filter
-- [ ] Update endpoint names
-- [ ] More Stats Collection
-- [ ] AI integration
-- [ ] OAuth Login
-- [ ] Update Profile
+# Fitness Spark Backend TODO
+
+Tracked as GitHub Issues:
+- Update endpoint names
+- More Stats Collection
+- AI integration
+- OAuth Login
+- Update Profile
