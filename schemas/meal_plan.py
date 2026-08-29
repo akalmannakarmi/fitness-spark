@@ -73,8 +73,8 @@ class MealPlanUpdate(BaseModel):
 class MealPlanFilter(BaseModel):
     search: str | None = None
     recipe_ids: list[str] | None = None
-    page: int = 1
-    limit: int = 10
+    page: int = Field(default=1, ge=1)
+    limit: int = Field(default=10, ge=1, le=100)
 
     @property
     def skip(self) -> int:

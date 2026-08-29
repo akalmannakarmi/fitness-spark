@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 from bson import ObjectId
@@ -48,34 +49,51 @@ async def db_delete_recipe(recipe_id: str) -> str:
 
 
 async def db_get_recipes(filters: RecipeFilter) -> tuple[list[dict[str, Any]], int]:
-    query: dict[str, Any] = {}
+    conditions: list[dict[str, Any]] = []
 
     # Text search
     if filters.search:
-        query["$or"] = [
-            {"title": {"$regex": filters.search, "$options": "i"}},
-            {"description": {"$regex": filters.search, "$options": "i"}},
-        ]
+        escaped = re.escape(filters.search)
+        conditions.append(
+            {
+                "$or": [
+                    {"title": {"$regex": escaped, "$options": "i"}},
+                    {"description": {"$regex": escaped, "$options": "i"}},
+                ]
+            }
+        )
 
     # Boolean filters
-    for field in ["vegetarian", "vegan", "glutenFree", "dairyFree", "cheep"]:
+    for field in ["vegetarian", "vegan", "glutenFree", "dairyFree"]:
         val = getattr(filters, field)
         if val is not None:
-            query[field] = val
+            conditions.append({field: val})
+
+    # cheap filter: match either the new "cheap" key or legacy "cheep" key
+    if filters.cheap is not None:
+        conditions.append({"$or": [{"cheap": filters.cheap}, {"cheep": filters.cheap}]})
 
     # Time range
-    if filters.min_readyInMinutes or filters.max_readyInMinutes:
-        query["readyInMinutes"] = {}
-        if filters.min_readyInMinutes:
-            query["readyInMinutes"]["$gte"] = filters.min_readyInMinutes
-        if filters.max_readyInMinutes:
-            query["readyInMinutes"]["$lte"] = filters.max_readyInMinutes
+    if filters.min_readyInMinutes is not None or filters.max_readyInMinutes is not None:
+        time_range: dict[str, Any] = {}
+        if filters.min_readyInMinutes is not None:
+            time_range["$gte"] = filters.min_readyInMinutes
+        if filters.max_readyInMinutes is not None:
+            time_range["$lte"] = filters.max_readyInMinutes
+        conditions.append({"readyInMinutes": time_range})
 
-    # Ingredient filters
+    # Ingredient filters (combine include/exclude with $and so they don't overwrite)
+    ingredient_conditions: list[dict[str, Any]] = []
     if filters.include_ingredients:
-        query["ingredients.name"] = {"$in": filters.include_ingredients}
+        ingredient_conditions.append(
+            {"ingredients.name": {"$in": filters.include_ingredients}}
+        )
     if filters.exclude_ingredients:
-        query["ingredients.name"] = {"$nin": filters.exclude_ingredients}
+        ingredient_conditions.append(
+            {"ingredients.name": {"$nin": filters.exclude_ingredients}}
+        )
+    if ingredient_conditions:
+        conditions.append({"$and": ingredient_conditions})
 
     # Nutrient filters
     if filters.nutrients:
@@ -89,7 +107,11 @@ async def db_get_recipes(filters: RecipeFilter) -> tuple[list[dict[str, Any]], i
                     }
                 }
             }
-            query.update(nutrient_filter)
+            conditions.append(nutrient_filter)
+
+    query: dict[str, Any] = {}
+    if conditions:
+        query["$and"] = conditions
 
     # Fetch results
     total = await recipes_collection.count_documents(query)

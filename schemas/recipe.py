@@ -1,7 +1,7 @@
 from typing import Any
 
 from bson import ObjectId
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import AliasChoices, BaseModel, Field, field_serializer
 
 
 class Recipe(BaseModel):
@@ -14,7 +14,7 @@ class Recipe(BaseModel):
     vegan: bool
     glutenFree: bool
     dairyFree: bool
-    cheep: bool
+    cheap: bool = Field(validation_alias=AliasChoices("cheap", "cheep"))
 
     @field_serializer("id")
     def serialize_objectid(self, value: ObjectId) -> str:
@@ -51,7 +51,7 @@ class RecipeOut(BaseModel):
     vegan: bool
     glutenFree: bool
     dairyFree: bool
-    cheep: bool
+    cheap: bool = Field(validation_alias=AliasChoices("cheap", "cheep"))
     nutrients: list[Nutrient]
     ingredients: list[Ingredient]
     steps: list[str]
@@ -70,7 +70,7 @@ class RecipeCreate(BaseModel):
     vegan: bool
     glutenFree: bool
     dairyFree: bool
-    cheep: bool
+    cheap: bool
     nutrients: list[Nutrient]
     ingredients: list[Ingredient]
     steps: list[str]
@@ -85,7 +85,7 @@ class RecipeUpdate(BaseModel):
     vegan: bool | None = None
     glutenFree: bool | None = None
     dairyFree: bool | None = None
-    cheep: bool | None = None
+    cheap: bool | None = None
     nutrients: list[Nutrient] | None = None
     ingredients: list[Ingredient] | None = None
     steps: list[str] | None = None
@@ -97,15 +97,15 @@ class RecipeFilter(BaseModel):
     vegan: bool | None = None
     glutenFree: bool | None = None
     dairyFree: bool | None = None
-    cheep: bool | None = None
+    cheap: bool | None = None
     min_readyInMinutes: int | None = None
     max_readyInMinutes: int | None = None
     include_ingredients: list[str] | None = None
     exclude_ingredients: list[str] | None = None
     nutrients: dict[str, Any] | None = None
 
-    page: int = 1
-    limit: int = 10
+    page: int = Field(default=1, ge=1)
+    limit: int = Field(default=10, ge=1, le=100)
 
     @property
     def skip(self) -> int:

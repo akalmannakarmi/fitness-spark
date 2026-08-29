@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import logging
 import time
 from collections.abc import Awaitable, Callable
 from typing import Any, ParamSpec, TypeVar
@@ -10,8 +11,12 @@ from fastapi import HTTPException
 from config import Actions, Models
 from database import database, stats_collection
 
+logger = logging.getLogger(__name__)
+
 P = ParamSpec("P")
 R = TypeVar("R")
+
+_background_tasks: set[asyncio.Task[None]] = set()
 
 
 def update_stats(
@@ -32,11 +37,13 @@ def update_stats(
             finally:
                 end_time = time.perf_counter()
                 now = int(time.time() // 60)
-                asyncio.create_task(
+                task = asyncio.create_task(
                     db_update_stats(
                         model, action, status_code, now, start_time, end_time
                     )
                 )
+                _background_tasks.add(task)
+                task.add_done_callback(_background_tasks.discard)
             return result
 
         return wrapper
@@ -53,7 +60,7 @@ async def db_update_stats(
     end_time: float,
 ) -> None:
     elapsed_time = end_time - start_time
-    print(f"Execution time: {elapsed_time:.4f} seconds")
+    logger.debug("Execution time: %.4f seconds", elapsed_time)
     await stats_collection.update_one(
         {"model": model},
         {

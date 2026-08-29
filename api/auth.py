@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 
 from config import Actions, Models
 from crud.stats import update_stats
@@ -16,7 +16,7 @@ router = APIRouter()
 @update_stats(Models.User, Actions.Create)
 async def signup(user: UserCreate) -> dict[str, Any]:
     user_id = await create_user(user)
-    access_token, expires_at = create_access_token(user_id, user.expires_at)
+    access_token, expires_at = create_access_token(user_id)
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -29,11 +29,7 @@ async def signup(user: UserCreate) -> dict[str, Any]:
 @update_stats(Models.User, Actions.Read)
 async def login(request: LoginRequest) -> dict[str, Any]:
     user = await authenticate_user(request.username, request.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-        )
-    access_token, expires_at = create_access_token(user.id, request.expires_at)
+    access_token, expires_at = create_access_token(user.id)
     return {
         "access_token": access_token,
         "token_type": "bearer",

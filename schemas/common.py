@@ -25,3 +25,7 @@ def _validate_object_id(value: Any) -> str:
 
 
 MongoObjectId = Annotated[str, BeforeValidator(_validate_object_id)]
+
+
+def num_pages(total: int, limit: int) -> int:
+    return (total + limit - 1) // limit

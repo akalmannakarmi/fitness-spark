@@ -19,7 +19,7 @@ from crud.recipes import (
 )
 from crud.stats import update_stats
 from deps import require_admin
-from schemas.common import SuccessResponse
+from schemas.common import MongoObjectId, SuccessResponse, num_pages
 from schemas.meal_plan import (
     MealPlanCreate,
     MealPlanFilter,
@@ -52,14 +52,14 @@ async def get_recipes(
         "page": filters.page,
         "limit": filters.limit,
         "total": total,
-        "pages": (total + filters.limit - 1) // filters.limit,
+        "pages": num_pages(total, filters.limit),
     }
 
 
 @router.get("/get/recipe/{recipe_id}", response_model=RecipeOut)
 @update_stats(Models.Recipe, Actions.Read)
 async def get_recipe(
-    recipe_id: str, _: User = Depends(require_admin)
+    recipe_id: MongoObjectId, _: User = Depends(require_admin)
 ) -> dict[str, Any]:
     return await db_get_recipe(recipe_id)
 
@@ -80,7 +80,7 @@ async def create_recipe(
 @router.patch("/update/recipe/{recipe_id}", response_model=SuccessResponse)
 @update_stats(Models.Recipe, Actions.Update)
 async def update_recipe(
-    recipe_id: str, form: RecipeUpdate, _: User = Depends(require_admin)
+    recipe_id: MongoObjectId, form: RecipeUpdate, _: User = Depends(require_admin)
 ) -> dict[str, Any]:
     updated_id = await db_update_recipe(recipe_id, form)
     return {
@@ -93,7 +93,7 @@ async def update_recipe(
 @router.delete("/delete/recipe/{recipe_id}", response_model=SuccessResponse)
 @update_stats(Models.Recipe, Actions.Delete)
 async def delete_recipe(
-    recipe_id: str, _: User = Depends(require_admin)
+    recipe_id: MongoObjectId, _: User = Depends(require_admin)
 ) -> dict[str, Any]:
     deleted_id = await db_delete_recipe(recipe_id)
     return {
@@ -106,7 +106,7 @@ async def delete_recipe(
 @router.get("/get/meal_plans", response_model=MealPlansOut)
 @update_stats(Models.Plans, Actions.Read)
 async def get_meal_plans(
-    user: User = Depends(require_admin), filters: MealPlanFilter = Depends()
+    _: User = Depends(require_admin), filters: MealPlanFilter = Depends()
 ) -> dict[str, Any]:
     meal_plans, total = await db_get_meal_plans(filters)
     return {
@@ -114,14 +114,14 @@ async def get_meal_plans(
         "total": total,
         "page": filters.page,
         "limit": filters.limit,
-        "pages": (total + filters.limit - 1) // filters.limit,
+        "pages": num_pages(total, filters.limit),
     }
 
 
 @router.get("/get/meal_plan/{meal_plan_id}", response_model=MealPlanOut)
 @update_stats(Models.Plans, Actions.Read)
 async def get_meal_plan(
-    meal_plan_id: str, _: User = Depends(require_admin)
+    meal_plan_id: MongoObjectId, _: User = Depends(require_admin)
 ) -> dict[str, Any]:
     return await db_get_meal_plan(meal_plan_id)
 
@@ -142,7 +142,7 @@ async def create_meal_plan(
 @router.patch("/update/meal_plan/{meal_plan_id}", response_model=SuccessResponse)
 @update_stats(Models.Plans, Actions.Update)
 async def update_meal_plan(
-    meal_plan_id: str, form: MealPlanUpdate, _: User = Depends(require_admin)
+    meal_plan_id: MongoObjectId, form: MealPlanUpdate, _: User = Depends(require_admin)
 ) -> dict[str, Any]:
     updated_id = await db_update_meal_plan(meal_plan_id, form)
     return {
@@ -155,7 +155,7 @@ async def update_meal_plan(
 @router.delete("/delete/meal_plan/{meal_plan_id}", response_model=SuccessResponse)
 @update_stats(Models.Plans, Actions.Delete)
 async def delete_meal_plan(
-    meal_plan_id: str, _: User = Depends(require_admin)
+    meal_plan_id: MongoObjectId, _: User = Depends(require_admin)
 ) -> dict[str, Any]:
     deleted_id = await db_delete_meal_plan(meal_plan_id)
     return {

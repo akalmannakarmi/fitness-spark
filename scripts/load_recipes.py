@@ -61,7 +61,7 @@ async def read_and_insert_json_files() -> None:
                             "vegan": recipe.get("vegan", False),
                             "glutenFree": recipe.get("glutenFree", False),
                             "dairyFree": recipe.get("dairyFree", False),
-                            "cheep": recipe.get("cheep", False),
+                            "cheap": recipe.get("cheap", recipe.get("cheep", False)),
                             "nutrients": nutrients,
                             "ingredients": ingredients,
                             "steps": steps,

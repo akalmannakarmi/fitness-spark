@@ -8,7 +8,6 @@ class UserCreate(BaseModel):
     username: str
     email: str
     password: str
-    expires_at: float | None = None
 
 
 class AdminUserCreate(BaseModel):
@@ -50,7 +49,6 @@ class UsersOut(BaseModel):
 class LoginRequest(BaseModel):
     username: str
     password: str
-    expires_at: float | None = None
 
 
 class Token(BaseModel):

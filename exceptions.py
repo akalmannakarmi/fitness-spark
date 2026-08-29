@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -9,6 +11,16 @@ class CustomAPIException(HTTPException):
             status_code=status_code,
             detail={"error": error, "message": message},
         )
+
+
+def _serializable(value: Any) -> Any:
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, dict):
+        return {_serializable(k): _serializable(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_serializable(v) for v in value]
+    return str(value)
 
 
 def register_exception_handlers(app: FastAPI) -> None:
@@ -25,7 +37,10 @@ def register_exception_handlers(app: FastAPI) -> None:
     ) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={"error": "Validation Error", "message": exc.errors()},
+            content={
+                "error": "Validation Error",
+                "message": [_serializable(error) for error in exc.errors()],
+            },
         )
 
     @app.exception_handler(Exception)

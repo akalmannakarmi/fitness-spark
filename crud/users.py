@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 from bson import ObjectId
@@ -68,7 +69,7 @@ async def get_users(
 ) -> tuple[list[dict[str, Any]], int]:
     query: dict[str, Any] = {}
     if search:
-        query["username"] = {"$regex": search, "$options": "i"}
+        query["username"] = {"$regex": re.escape(search), "$options": "i"}
 
     total = await users_collection.count_documents(query)
 
@@ -78,24 +79,32 @@ async def get_users(
     return users, total
 
 
-async def update_user(user_id: str, form: UserUpdate) -> str | None:
+async def update_user(user_id: str, form: UserUpdate) -> str:
     update: dict[str, Any] = {}
     if form.username:
         update["username"] = form.username
     if form.email:
         update["email"] = form.email
     if form.password:
-        update["password"] = form.password
+        update["password"] = hash_password(form.password)
     if form.groups:
         update["groups"] = form.groups
     result = await users_collection.update_one(
         {"_id": ObjectId(user_id)}, {"$set": update}
     )
-    return str(user_id) if result.modified_count > 0 else None
+    if result.matched_count == 0:
+        raise CustomAPIException(
+            404, "User Not Found", "User with the provided Id not found!"
+        )
+    return user_id
 
 
 async def delete_user(user_id: str) -> None:
-    await users_collection.delete_one({"_id": ObjectId(user_id)})
+    result = await users_collection.delete_one({"_id": ObjectId(user_id)})
+    if result.deleted_count == 0:
+        raise CustomAPIException(
+            404, "User Not Found", "User with the provided Id not found!"
+        )
 
 
 async def db_list_users() -> list[dict[str, Any]]:

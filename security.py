@@ -17,13 +17,10 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     )
 
 
-def create_access_token(
-    user_id: object, expires_at: float | None = None
-) -> tuple[str, float]:
-    if not expires_at:
-        expires_at = (
-            datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        ).timestamp()
+def create_access_token(user_id: object) -> tuple[str, float]:
+    expires_at = (
+        datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    ).timestamp()
 
     to_encode = {"user_id": str(user_id), "expires_at": expires_at}
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
