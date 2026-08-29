@@ -8,11 +8,11 @@ REST API powering **Fitness Spark**, a meal-planning application that helps user
 
 - **Framework:** FastAPI
 - **Language:** Python 3.13+
-- **Database:** MongoDB (via Motor async driver)
+- **Database:** MongoDB (via pymongo `AsyncMongoClient`)
 - **Authentication:** JWT (PyJWT, HS256) + bcrypt password hashing
 - **Package manager:** uv
 - **Quality tools:** ruff (lint + format), mypy (type checking), pre-commit
-- **Tests:** pytest + pytest-asyncio
+- **Tests:** pytest + pytest-asyncio (httpx ASGI transport, no live server)
 - **Infrastructure:** Docker / Docker Compose
 
 ## Prerequisites
@@ -68,16 +68,23 @@ The API will be available at <http://localhost:8000>. Interactive API docs (Swag
 
 ### 6. Seed data (optional)
 
-The app ships with two standalone scripts for populating recipes:
+The app ships with standalone scripts under `scripts/` for populating recipes and users:
 
-- `fetchdata.py` — pulls recipe data from the Spoonacular API into local JSON files
-- `loader.py` — loads those JSON files into MongoDB
+- `fetch_recipes.py` — pulls recipe data from the Spoonacular API into `recipies_*.json` dumps
+- `load_recipes.py` — loads those JSON dumps into MongoDB
+- `create_admin.py` — interactive CLI that creates an admin user
+- `migrate_rename_cheep.py` — one-off migration renaming the legacy `cheep` field to `cheap`
 
-To create an admin user for the admin endpoints:
+The fetch and load scripts use `requests`, which lives in the optional `tools` extra. Install it once and run the scripts from the repo root:
 
 ```bash
-uv run python tools.py
+uv sync --extra tools
+uv run python scripts/fetch_recipes.py --api-key YOUR_KEY --cuisine Thai
+uv run python scripts/load_recipes.py
+uv run python scripts/create_admin.py
 ```
+
+`fetch_recipes.py` accepts `--api-key` (or the `SPOONACULAR_API_KEY` env var), `--cuisine`, `--number` (recipes per request), and `--offset`.
 
 ## API Overview
 
@@ -144,13 +151,40 @@ Recipe listing endpoints accept the following query parameters:
 
 Meal-plan listing endpoints accept: `search`, `recipe_ids` (list), `page`, `limit`.
 
+## Project Structure
+
+The backend is organized by domain:
+
+```
+app.py            # FastAPI instance + router wiring (uvicorn target: app:app)
+main.py           # dev entry point (env-driven reload)
+config.py         # pydantic-settings Settings (single source of env)
+database.py       # ONE AsyncMongoClient + collections
+security.py       # password hashing + JWT helpers
+exceptions.py     # CustomAPIException + handlers
+deps.py           # get_current_user, require_admin
+schemas/          # pydantic request/response models (common, user, recipe, meal_plan, stats)
+crud/             # data-access functions (users, recipes, meal_plans, stats)
+api/              # routers (auth, admin_users, recipes, meal_plans, admin, stats)
+scripts/          # standalone CLI tools (create_admin, fetch_recipes, load_recipes, migrate_rename_cheep)
+tests/            # pytest suite (httpx ASGI transport)
+```
+
 ## Running Tests
 
+Tests live under `tests/` and use httpx's ASGI transport against the app in-process — **no live server required**. They do need a running MongoDB (see `MONGO_URL` in `.env`); tests use a dedicated `fitness_spark_test` database that is cleaned up after each test.
+
 ```bash
+docker compose up -d mongodb
 uv run pytest
 ```
 
-Tests live under `auth/test/`. They require a running MongoDB (see `MONGO_URL` in `.env`).
+To run a single test file or by name:
+
+```bash
+uv run pytest tests/test_auth.py
+uv run pytest -k "login"
+```
 
 ## Docker
 
