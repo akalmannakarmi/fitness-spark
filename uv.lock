@@ -376,19 +376,22 @@ source = { editable = "." }
 dependencies = [
     { name = "bcrypt" },
     { name = "fastapi" },
-    { name = "httpx" },
-    { name = "motor" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pyjwt" },
     { name = "pymongo" },
     { name = "python-dotenv" },
-    { name = "requests" },
     { name = "uvicorn" },
 ]
 
 [package.optional-dependencies]
+tools = [
+    { name = "requests" },
+]
+
+[package.dev-dependencies]
 dev = [
+    { name = "httpx" },
     { name = "mypy" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -401,23 +404,26 @@ dev = [
 requires-dist = [
     { name = "bcrypt", specifier = ">=4.3.0" },
     { name = "fastapi", specifier = ">=0.115.8" },
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "motor", specifier = ">=3.7.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.14.1" },
-    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.0.1" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "pydantic-settings", specifier = ">=2.6.1" },
     { name = "pyjwt", specifier = ">=2.10.1" },
     { name = "pymongo", specifier = ">=4.11.1" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3.5" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.25.3" },
-    { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3.6.1" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
-    { name = "requests", specifier = ">=2.32.3" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9.6" },
+    { name = "requests", marker = "extra == 'tools'", specifier = ">=2.32.3" },
     { name = "uvicorn", specifier = ">=0.34.0" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["tools"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "mypy", specifier = ">=1.14.1" },
+    { name = "pre-commit", specifier = ">=4.0.1" },
+    { name = "pytest", specifier = ">=8.3.5" },
+    { name = "pytest-asyncio", specifier = ">=0.25.3" },
+    { name = "pytest-xdist", specifier = ">=3.6.1" },
+    { name = "ruff", specifier = ">=0.9.6" },
+]
 
 [[package]]
 name = "h11"
@@ -567,18 +573,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/6c/f0/89eb11dffbe9279ff37144dec786927314502ae0b114f1449dc78c458aab/librt-0.15.0-cp315-cp315t-win32.whl", hash = "sha256:c16d15ee371643ab48dc8248a3e680ebbeca573a13af2c3dd0c985b142d77162", size = 104313, upload-time = "2026-08-07T10:49:12.305Z" },
     { url = "https://files.pythonhosted.org/packages/6d/4a/1f1978c200f563beda63c36adff2d65bbecb81e365e8e69e572f5f70fbc6/librt-0.15.0-cp315-cp315t-win_amd64.whl", hash = "sha256:dbd605739f228912dc49027cb764456b9757750bdc2b6b7773164db7096c6fd1", size = 126889, upload-time = "2026-08-07T10:49:13.881Z" },
     { url = "https://files.pythonhosted.org/packages/38/a6/800800bfed7b1fb10fc3f3d557785c3854e80d3f7a9800d784b176a1fc2d/librt-0.15.0-cp315-cp315t-win_arm64.whl", hash = "sha256:84d244b00604d17df3fc7736c327892d6bba66181254aa4087be807b6c342bdc", size = 110700, upload-time = "2026-08-07T10:49:15.499Z" },
-]
-
-[[package]]
-name = "motor"
-version = "3.7.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pymongo" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/93/ae/96b88362d6a84cb372f7977750ac2a8aed7b2053eed260615df08d5c84f4/motor-3.7.1.tar.gz", hash = "sha256:27b4d46625c87928f331a6ca9d7c51c2f518ba0e270939d395bc1ddc89d64526", size = 280997, upload-time = "2025-05-14T18:56:33.653Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/01/9a/35e053d4f442addf751ed20e0e922476508ee580786546d699b0567c4c67/motor-3.7.1-py3-none-any.whl", hash = "sha256:8a63b9049e38eeeb56b4fdd57c3312a6d1f25d01db717fe7d82222393c410298", size = 74996, upload-time = "2025-05-14T18:56:31.665Z" },
 ]
 
 [[package]]

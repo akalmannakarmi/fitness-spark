@@ -3,6 +3,5 @@ __pycache__
 .mypy_cache
 .ruff_cache
 .venv/
-*.json
-*.csv
+recipies_*.json
 .env

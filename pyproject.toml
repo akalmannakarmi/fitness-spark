@@ -7,19 +7,22 @@ requires-python = ">=3.13"
 dependencies = [
     "bcrypt>=4.3.0",
     "fastapi>=0.115.8",
-    "httpx>=0.28.1",
-    "motor>=3.7.0",
     "pydantic>=2.10.6",
     "pydantic-settings>=2.6.1",
     "pymongo>=4.11.1",
     "python-dotenv>=1.0.1",
     "PyJWT>=2.10.1",
-    "requests>=2.32.3",
     "uvicorn>=0.34.0",
 ]
 
 [project.optional-dependencies]
+tools = [
+    "requests>=2.32.3",
+]
+
+[dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "mypy>=1.14.1",
     "pre-commit>=4.0.1",
     "pytest>=8.3.5",
@@ -53,9 +56,6 @@ extend-immutable-calls = [
     "fastapi.Query",
 ]
 
-[tool.ruff.lint.flake8-builtins]
-builtins-ignorelist = ["id"]
-
 [tool.ruff.lint.per-file-ignores]
 "schemas/**" = ["N815", "N816"]
 
@@ -72,4 +72,11 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "strict"
-asyncio_default_fixture_loop_scope = "function"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore:coroutine.*was never awaited",
+    "ignore:Task was destroyed but it is pending",
+    "ignore:Task exception was never retrieved",
+]
