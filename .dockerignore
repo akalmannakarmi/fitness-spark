@@ -1,12 +1,15 @@
 __pycache__
 .pytest_cache
+.mypy_cache
+.ruff_cache
+.venv/
+.git/
 *.json
 *.csv
 .env
+.env.*
 
 recipes
 Dockerfile
 compose.yml
 todo.md
-fetchdata.py
-

@@ -1,39 +1,61 @@
-import os
-from dotenv import load_dotenv
-from enum import Enum
+from enum import StrEnum
 
-load_dotenv()
-
-MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
-DATABASE_NAME = os.getenv("DATABASE_NAME", "fastapi_auth")
-
-SECRET_KEY = os.getenv("SECRET_KEY", "supersecret")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-SCHEMA = "http"
-HOST = "0.0.0.0"
-PORT = 8000
-
-if HOST == "0.0.0.0":
-    BASE_URL = f"{SCHEMA}://127.0.0.1:{PORT}"
-else:
-    BASE_URL = f"{SCHEMA}://{HOST}:{PORT}"
-
-AUTH_PREFIX = "/auth"
-STATS_PREFIX = "/stats"
-ADMIN_PREFIX = "/admin"
-APIV1_PREFIX = "/api/v1"
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Models(str, Enum):
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    mongo_url: str = "mongodb://localhost:27017"
+    database_name: str = "fastapi_auth"
+    secret_key: str = ""
+    cors_origins: str = "http://localhost:3000"
+    host: str = "0.0.0.0"
+    port: int = 8000
+    reload: bool = False
+
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+
+    auth_prefix: str = "/auth"
+    stats_prefix: str = "/stats"
+    admin_prefix: str = "/admin"
+    apiv1_prefix: str = "/api/v1"
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin]
+
+
+settings = Settings()
+
+if not settings.secret_key:
+    raise RuntimeError("SECRET_KEY environment variable is required")
+
+MONGO_URL = settings.mongo_url
+DATABASE_NAME = settings.database_name
+SECRET_KEY = settings.secret_key
+CORS_ORIGINS = settings.cors_origins_list
+HOST = settings.host
+PORT = settings.port
+RELOAD = settings.reload
+ALGORITHM = settings.algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
+
+AUTH_PREFIX = settings.auth_prefix
+STATS_PREFIX = settings.stats_prefix
+ADMIN_PREFIX = settings.admin_prefix
+APIV1_PREFIX = settings.apiv1_prefix
+
+
+class Models(StrEnum):
     User = "users"
     Stats = "statistics"
     Recipe = "recipes"
     Plans = "meal_plans"
 
 
-class Actions(str, Enum):
+class Actions(StrEnum):
     Create = "create"
     Read = "read"
     Update = "update"

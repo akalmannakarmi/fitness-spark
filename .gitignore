@@ -1,5 +1,7 @@
 __pycache__
 .pytest_cache
-*.json
-*.csv
+.mypy_cache
+.ruff_cache
+.venv/
+recipies_*.json
 .env
