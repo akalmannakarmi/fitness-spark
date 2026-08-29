@@ -32,7 +32,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["admin", "appV1", "auth", "stats", "utils"]
+packages = ["api", "crud", "schemas", "scripts"]
 
 [tool.ruff]
 target-version = "py313"
@@ -56,9 +56,7 @@ extend-immutable-calls = [
 builtins-ignorelist = ["id"]
 
 [tool.ruff.lint.per-file-ignores]
-"appV1/**" = ["N999"]
-"appV1/models.py" = ["N815", "N816"]
-"appV1/schemas.py" = ["N815", "N816"]
+"schemas/**" = ["N815", "N816"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -70,27 +68,6 @@ strict = true
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = [
-    "admin.*",
-    "appV1.*",
-    "auth.*",
-    "stats.*",
-    "utils.*",
-    "loader",
-    "fetchdata",
-    "tools",
-]
-# Legacy code predates type annotations; keep strict type checking for real
-# errors (arg-type, assignment, return-value, ...) while relaxing only the
-# missing-annotation checks that this codebase does not satisfy yet.
-disable_error_code = [
-    "no-untyped-def",
-    "untyped-decorator",
-    "no-untyped-call",
-    "var-annotated",
-]
 
 [tool.pytest.ini_options]
 asyncio_mode = "strict"

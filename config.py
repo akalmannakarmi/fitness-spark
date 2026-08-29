@@ -13,17 +13,13 @@ if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY environment variable is required")
 
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-SCHEMA = "http"
-HOST = "0.0.0.0"
-PORT = 8000
-
-if HOST == "0.0.0.0":
-    BASE_URL = f"{SCHEMA}://127.0.0.1:{PORT}"
-else:
-    BASE_URL = f"{SCHEMA}://{HOST}:{PORT}"
+HOST = os.getenv("HOST", "0.0.0.0")
+PORT = int(os.getenv("PORT", "8000"))
+RELOAD = os.getenv("RELOAD", "false").lower() in {"1", "true", "yes"}
 
 AUTH_PREFIX = "/auth"
 STATS_PREFIX = "/stats"

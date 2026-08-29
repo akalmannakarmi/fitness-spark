@@ -6,7 +6,12 @@ Thanks for taking the time to contribute to **Fitness Spark**! These guidelines 
 
 - [Development Environment](#development-environment)
 - [Coding Standards](#coding-standards)
+  - [Backend (Python)](#backend-python)
+  - [Frontend (Next.js / TypeScript)](#frontend-nextjs--typescript)
 - [Pre-Commit Hooks](#pre-commit-hooks)
+  - [Backend: pre-commit](#backend-pre-commit)
+  - [Frontend: Husky + lint-staged](#frontend-husky--lint-staged)
+- [Continuous Integration](#continuous-integration)
 - [Commit Message Conventions](#commit-message-conventions)
 - [Pull Request Process](#pull-request-process)
 - [Branching Strategy](#branching-strategy)
@@ -45,7 +50,9 @@ For the frontend repo, use `bun install` and `bun run dev` instead.
 
 ## Coding Standards
 
-Standards are enforced by configured tools which run in CI. Keep them passing locally before pushing:
+Standards are enforced by configured tools which run in CI and fail the build on any violation. Keep them passing locally before pushing.
+
+### Backend (Python)
 
 - **Formatting:** [ruff format](https://docs.astral.sh/ruff/formatter/) — line length 88, double quotes, spaces.
   ```bash
@@ -64,9 +71,33 @@ Standards are enforced by configured tools which run in CI. Keep them passing lo
 
 Configuration lives in `pyproject.toml`.
 
+### Frontend (Next.js / TypeScript)
+
+- **Formatting:** [Prettier](https://prettier.io/) — semicolons, double quotes, 2-space indent, 80-column print width.
+  ```bash
+  bun run format          # write
+  bun run format:check    # CI: fails on unformatted files
+  ```
+- **Linting:** ESLint via `next lint` (Next.js core web-vitals + TypeScript rules).
+  ```bash
+  bun run lint
+  ```
+- **Type checking:** `tsc --noEmit`. TypeScript runs in strict mode.
+  ```bash
+  bun run typecheck
+  ```
+- **Tests:** Vitest + Testing Library + jsdom. CI does not run tests yet, but keep them green locally.
+  ```bash
+  bun run test
+  ```
+
+Configuration lives in `package.json`, `eslint.config.mjs`, `.prettierrc`, and `tsconfig.json`.
+
 ## Pre-Commit Hooks
 
-This repository uses [pre-commit](https://pre-commit.com/) to automatically run ruff (lint + format), mypy, and a few safety checks before each commit.
+### Backend: pre-commit
+
+This repository uses [pre-commit](https://pre-commit.com/) to automatically run ruff (lint + format), mypy in strict mode, and a few safety checks (merge conflicts, debug statements, EOF newlines, trailing whitespace) before each commit. Any violation blocks the commit.
 
 Install the hooks once after `uv sync`:
 
@@ -81,6 +112,25 @@ uv run pre-commit run --all-files
 ```
 
 If a hook reformats or fixes a file, review the changes, stage them, and commit again.
+
+### Frontend: Husky + lint-staged
+
+The frontend uses [Husky](https://typicode.github.io/husky/) with [lint-staged](https://github.com/lint-staged/lint-staged). Before each commit, `prettier --write` and `eslint --fix` run against staged `*.{ts,tsx}` files (Prettier also formats `*.{json,css,md}`). Any remaining violation blocks the commit.
+
+Hooks are installed automatically via `bun install` (the `prepare` script). To run the staged linters manually:
+
+```bash
+bun run lint-staged
+```
+
+## Continuous Integration
+
+Both repositories gate every push and pull request on the standards above (see `.github/workflows/ci.yml`). CI **fails** on any lint error, unformatted file, or type error, so violations are caught before merge:
+
+- **Backend:** `ruff check .`, `ruff format --check .`, and `mypy .` (plus `pytest` with a MongoDB service container).
+- **Frontend:** `bun run lint`, `bun run format:check`, `bun run typecheck`, and `bun run build`.
+
+The same commands your pre-commit hooks run locally are exactly what CI enforces, so passing the hooks means passing CI.
 
 ## Commit Message Conventions
 
@@ -107,10 +157,8 @@ docs: update API reference in README
 1. Create a feature branch off `main` (see [Branching Strategy](#branching-strategy)).
 2. Make your changes, keeping the diff small and focused. If a change spans both repos, raise a PR for each.
 3. Ensure all quality gates pass locally:
-   - `uv run ruff format --check .`
-   - `uv run ruff check .`
-   - `uv run mypy .`
-   - `uv run pytest`
+   - Backend: `uv run ruff format --check .`, `uv run ruff check .`, `uv run mypy .`, `uv run pytest`
+   - Frontend: `bun run lint`, `bun run format:check`, `bun run typecheck`
 4. Push the branch and open a pull request targeting `main`.
 5. Fill in the PR description: what changed, why, and how to test it (screenshots for UI changes).
 6. Continuous integration will run the same lint, format, type-check, and test gates. A PR must pass CI before it is merged.
