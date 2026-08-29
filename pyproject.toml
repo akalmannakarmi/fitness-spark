@@ -2,6 +2,7 @@
 name = "fitness-spark"
 version = "1.0.0"
 description = "Fitness meal-planning API"
+license = "MIT"
 requires-python = ">=3.13"
 dependencies = [
     "bcrypt>=4.3.0",
